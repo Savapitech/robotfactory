@@ -51,6 +51,7 @@ extern const size_t OP_TAB_SZ;
     #define PROG_NAME_LENGTH 128
     #define COMMENT_LENGTH 2048
     #define COREWAR_EXEC_MAGIC 0xea83f3
+    #define STRUCT_PADDING 4
 
 typedef struct header_s {
     int magic;

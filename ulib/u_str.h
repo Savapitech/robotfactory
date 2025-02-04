@@ -7,6 +7,12 @@
 
 #ifndef STRING_H
     #define STRING_H
+    #include <stddef.h>
+
+typedef struct {
+    char *str;
+    int sz;
+} buff_t;
 
 int u_getnbr(char const *);
 char *u_strcat(char *, char const *);
@@ -20,5 +26,6 @@ char *u_strstr(char *, char const *);
 int u_strcmp(char const *, char const *);
 int u_strncmp(char const *, char const *, int);
 char *u_numstr(char *, int);
+int u_spacelen(char const *str);
 
 #endif /* STRING_H */
