@@ -14,6 +14,8 @@ asm
 a.out
 libmy.a
 test
+ref_bins
+champions
 
 # Build
 *.o
