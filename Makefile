@@ -27,7 +27,7 @@ LIB_OBJ := $(LIB_SRC:%.c=$(BUILD_DIR)/%.o)
 
 CC := gcc
 
-CFLAGS += -Wall -Wextra -iquote ulib
+CFLAGS += -Wall -Wextra -Werror=write-strings -iquote ulib
 CFLAGS += -Wno-unused-parameter -Wunused-result -fanalyzer
 CFLAGS += -Wp,-U_FORTIFY_SOURCE -Wcast-qual -Wduplicated-branches
 CFLAGS += -Wduplicated-cond -Wformat=2 -Wshadow
