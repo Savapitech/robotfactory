@@ -1,13 +1,13 @@
 ##
 ## EPITECH PROJECT, 2024
-## radar
+## __
 ## File description:
 ## ./Makefile
 ##
 
 MAKEFLAGS += -j
 
-NAME := asm
+BIN_NAME := asm
 
 LIB_NAME := libu.a
 
@@ -22,9 +22,6 @@ LIB_SRC += $(wildcard ulib/write/*.c)
 
 BUILD_DIR := .build
 
-OBJ := $(SRC:%.c=$(BUILD_DIR)/%.o)
-LIB_OBJ := $(LIB_SRC:%.c=$(BUILD_DIR)/%.o)
-
 CC := gcc
 
 CFLAGS += -Wall -Wextra -Werror=write-strings -iquote ulib
@@ -36,42 +33,55 @@ CFLAGS += -Wwrite-strings -Werror=declaration-after-statement
 CFLAGS += -Werror=format-nonliteral -Werror=int-conversion -Werror=return-type
 CFLAGS += -Werror=vla-larger-than=0 -Wno-discarded-qualifiers
 
-DEBUG_FLAGS := -DR_DEBUG_MODE -g3
-
 LDFLAGS += -L .
 LDLIBS := -lu
 
 include utils.mk
 
-all: $(NAME)
+.PHONY: _start all
+_start: all
 
-$(BUILD_DIR)/%.o: %.c
-	@ mkdir -p $(dir $@)
-	@ $(CC) $(CFLAGS) -o $@ -c $<
-	@ $(LOG_TIME) "$(C_GREEN) CC $(C_PURPLE) $(notdir $@) $(C_RESET)"
+# call mk-profile release, SRC, additional CFLAGS
+define mk-profile
 
-$(LIB_NAME): $(LIB_OBJ)
-	@ ar rc $(LIB_NAME) $(LIB_OBJ)
-	@ $(LOG_TIME) "$(C_CYAN) AR $(C_PURPLE) $(notdir $@) $(C_RESET)"
+NAME_$(strip $1) := $4
+OBJ_$(strip $1) := $$($(strip $2):%.c=$$(BUILD_DIR)/$(strip $1)/%.o)
 
-$(NAME): $(LIB_NAME) $(OBJ)
-	@ $(CC) $(CFLAGS) $(OBJ) $(LDFLAGS) $(LDLIBS) -o $(NAME)
-	@ $(LOG_TIME) "$(C_GREEN) CC $(C_PURPLE) $(notdir $@) $(C_RESET)"
-	@ $(LOG_TIME) "$(C_GREEN) OK  Compilation finished $(C_RESET)"
+LIB_NAME_$(strip $1) := $(BUILD_DIR)/$(strip $1)/$(LIB_NAME)
+LIB_OBJ_$(strip $1) := $$(LIB_SRC:%.c=$$(BUILD_DIR)/$(strip $1)/%.o)
+
+$$(BUILD_DIR)/$(strip $1)/%.o: %.c
+	@ mkdir -p $$(dir $$@)
+	@ $$(CC) $$(CFLAGS) -o $$@ -c $$<
+	@ $$(LOG_TIME) "$$(C_GREEN) CC $$(C_PURPLE) $$(notdir $$@) $$(C_RESET)"
+
+$$(LIB_NAME_$(strip $1)): $$(LIB_OBJ_$(strip $1))
+	@ ar rc $$@ $$(LIB_OBJ_$(strip $1))
+	@ $$(LOG_TIME) "$$(C_CYAN) AR $$(C_PURPLE) $$(notdir $$@) $$(C_RESET)"
+
+$$(NAME_$(strip $1)): CFLAGS += -L $$(BUILD_DIR)/$(strip $1) $3
+$$(NAME_$(strip $1)): $$(LIB_NAME_$(strip $1)) $$(OBJ_$(strip $1))
+	@ $$(CC) $$(CFLAGS) $$(OBJ_$(strip $1)) $$(LDFLAGS) $$(LDLIBS) -o $$@
+	@ $$(LOG_TIME) "$$(C_GREEN) CC $$(C_PURPLE) $$(notdir $$@) $$(C_RESET)"
+	@ $$(LOG_TIME) "$$(C_GREEN) OK  Compilation finished $$(C_RESET)"
+
+endef
+
+$(eval $(call mk-profile, release, SRC, , $(BIN_NAME)))
+$(eval $(call mk-profile, debug, SRC, -D U_DEBUG_MODE -g3, debug))
+
+all: $(NAME_release)
 
 clean:
 	@ $(RM) $(OBJ)
 	@ $(LOG_TIME) "$(C_YELLOW) RM $(C_PURPLE) $(OBJ) $(C_RESET)"
 
 fclean:
-	@ $(RM) -r $(NAME) $(LIB_NAME) $(BUILD_DIR)
-	@ $(LOG_TIME) "$(C_YELLOW) RM $(C_PURPLE) $(NAME) $(BUILD_DIR) $(C_RESET)"
+	@ $(RM) -r $(NAME_release) $(NAME_debug) $(BUILD_DIR)
+	@ $(LOG_TIME) "$(C_YELLOW) RM $(C_PURPLE) $(NAME_release) $(NAME_debug) \
+		$(C_RESET)"
 
 .NOTPARALLEL: re
 re:	fclean all
-
-.NOTPARALLEL: debug
-debug: CFLAGS += $(DEBUG_FLAGS)
-debug: all
 
 .PHONY: all clean fclean re
