@@ -16,7 +16,7 @@
 #include "u_str.h"
 
 static
-char *read_file(char const *path)
+char *read_file(char const *path, rf_t *rf)
 {
     FILE *file = fopen(path, "r");
     struct stat st;
@@ -31,17 +31,20 @@ char *read_file(char const *path)
         return (fclose(file), NULL);
     fread(buffer, sizeof *buffer, st.st_size, file);
     buffer[st.st_size] = '\0';
+    rf->buff_sz = st.st_size;
     return (fclose(file), buffer);
 }
 
 static
 bool handle_file(char const *path)
 {
-    char *buffer = read_file(path);
+    rf_t rf = { .buff = NULL, 0, .file_name = path };
+    char *buffer = read_file(path, &rf);
 
     if (buffer == NULL)
         return (WRITE_CONST(STDERR_FILENO, "Error: file not exist\n"), false);
-    prepare_compilation(buffer);
+    rf.buff = buffer;
+    prepare_compilation(&rf);
     free(buffer);
     return true;
 }

@@ -5,10 +5,13 @@
 ** _
 */
 
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "common.h"
+#include "debug.h"
 #include "op.h"
 #include "parser.h"
 #include "u_mem.h"
@@ -37,11 +40,25 @@ char *get_header(char *buffer)
 }
 
 __attribute__((nonnull(1)))
-bool prepare_compilation(char *buffer)
+bool prepare_compilation(rf_t *rf)
 {
-    char *padded_header = get_header(buffer);
+    char *padded_header = get_header(rf->buff);
+    char new_file_name[u_strlen(rf->file_name) + 2];
+    char const *file_name = rf->file_name;
+    int new_file_fd;
 
-    write(1, padded_header, sizeof(char) * (PROG_NAME_LENGTH +
+    file_name += u_strcspn(rf->file_name, '/') + 1;
+    u_strcpy(new_file_name, file_name);
+    new_file_name[u_strcspn(new_file_name, '.') + 1] = 'c';
+    new_file_name[u_strcspn(new_file_name, '.') + 2] = 'o';
+    new_file_name[u_strcspn(new_file_name, '.') + 3] = 'r';
+    new_file_name[u_strcspn(new_file_name, '.') + 4] = '\0';
+    new_file_fd = open(new_file_name, O_WRONLY | O_CREAT, 0644);
+    U_DEBUG("Writing in file [%s]\n", new_file_name);
+    if (new_file_fd == -1)
+        return (WRITE_CONST(STDERR_FILENO, "Cannot write in file !\n"), false);
+    write(new_file_fd, padded_header, sizeof(char) * (PROG_NAME_LENGTH +
             COMMENT_LENGTH));
+    close(new_file_fd);
     return true;
 }

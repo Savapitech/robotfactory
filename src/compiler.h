@@ -9,5 +9,7 @@
     #define COMPILER_H
     #include <stdbool.h>
 
-bool prepare_compilation(char *buffer);
+    #include "common.h"
+
+bool prepare_compilation(rf_t *rf);
 #endif /* COMPILER_H */

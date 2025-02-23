@@ -24,7 +24,7 @@
     #define PURPLE CFMT(35)
     #define CYAN CFMT(36)
 
-    #ifdef R_DEBUG_MODE
+    #ifdef U_DEBUG_MODE
         #define HEAD __FILE_NAME__, __LINE__
 
         #define HEAD_FMT_FILE BOLD BLUE "%s" RESET
@@ -35,15 +35,15 @@
         #define ERR(fmt, ...) printf(fmt, __VA_ARGS__)
         #define DEBUG_INTERNAL(fmt, ...) ERR(HEAD_FMT fmt, HEAD, __VA_ARGS__)
 
-        #define MY_DEBUG(fmt, ...) DEBUG_INTERNAL(fmt, __VA_ARGS__)
-        #define MY_DEBUG_MSG(msg) DEBUG_INTERNAL("%s\n", msg)
+        #define U_DEBUG(fmt, ...) DEBUG_INTERNAL(fmt, __VA_ARGS__)
+        #define U_DEBUG_MSG(msg) DEBUG_INTERNAL("%s\n", msg)
     #else
 
-        #define MY_DEBUG_MSG(msg) OMIT
-        #define MY_DEBUG(fmt, ...) OMIT
+        #define U_DEBUG_MSG(msg) OMIT
+        #define U_DEBUG(fmt, ...) OMIT
 
-        #define MY_DEBUG_CALL(func, ...) OMIT
-        #define MY_DEBUG_USED __attribute__((unused))
+        #define U_DEBUG_CALL(func, ...) OMIT
+        #define U_DEBUG_USED __attribute__((unused))
     #endif
 
 #endif /* DEBUG_H */

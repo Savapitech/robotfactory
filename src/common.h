@@ -17,7 +17,7 @@ enum {
 typedef struct {
     char *buff;
     size_t buff_sz;
-    char *file_name;
+    char const *file_name;
 } rf_t;
 
 #endif /* COMMON_H */
