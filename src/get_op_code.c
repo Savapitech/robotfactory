@@ -31,30 +31,29 @@ buff_t get_instruction(char *line)
     return buff;
 }
 
+bool check_instruction(buff_t buff)
+{
+    for (size_t i = 0; i < OP_TAB_SZ; i++) {
+        if (u_strncmp(OP_TAB[i].mnemonique, buff.str, buff.sz) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 
 // FAIRE FONCTION QUI PREND UNE LIGNE, SI INSTRUCTION DEDANS : RENVOIE L'INS. // SINON RENVOIE RIEN ):<
 void get_op_code(rf_t *rf)
 {
     buff_t buff = {NULL, 0};
-    printf("OP TAB : \n%s\n", OP_TAB[0].mnemonique);
-    U_DEBUG("len OP_TAB[0][0] : %d\n", u_strlen(OP_TAB[0].mnemonique));
 
     for (size_t i = rf->lines_i; i < rf->lines_sz; i++) {
         buff = get_instruction(rf->lines[i]);
         if (buff.str == NULL)
             continue;
-        U_DEBUG("found intrustion : %.*s\n", buff.sz, buff.str);
+        if (!check_instruction(buff)) {
+            WRITE_CONST(STDERR_FILENO, CYAN "Invalid instruction.\n" RESET);
+            return;
+        }
     }
-
-
-    // for (size_t i = rf->lines_i; i < rf->lines_sz; i++) {
-    //     U_DEBUG("lines [%lu] : %s\n", i, rf->lines[i]);
-    //     for (size_t j = 0; i < OP_TAB_SZ; j++) {
-    //         if (u_strncmp(rf->lines[i], OP_TAB[j].mnemonique, u_strlen(OP_TAB[j].mnemonique)) == 0) {
-    //             U_DEBUG("voilà : %s\n", OP_TAB[j].mnemonique);
-    //         }
-    //     }
-    // }
-
-
 }
