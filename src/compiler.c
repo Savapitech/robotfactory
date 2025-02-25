@@ -17,7 +17,7 @@
 #include "u_mem.h"
 
 static
-char *get_header(char *buffer)
+char *get_header(rf_t *rf)
 {
     size_t header_sz = PROG_NAME_LENGTH + STRUCT_PADDING + COMMENT_LENGTH;
     char *header = malloc(sizeof(char) * header_sz);
@@ -29,8 +29,10 @@ char *get_header(char *buffer)
     u_bzero(header, header_sz);
     *(uint32_t *)(header) = swap_uint32(COREWAR_EXEC_MAGIC);
     header += sizeof(int);
-    name = get_metadata(buffer, NAME_CMD_STRING);
-    comment = get_metadata(buffer, COMMENT_CMD_STRING);
+    name = get_metadata(rf->lines[rf->lines_i], NAME_CMD_STRING);
+    rf->lines_i++;
+    comment = get_metadata(rf->lines[rf->lines_i], COMMENT_CMD_STRING);
+    rf->lines_i++;
     if (name.str == NULL || comment.str == NULL)
         return NULL;
     u_strncpy(header, name.str, name.sz);
@@ -42,7 +44,7 @@ char *get_header(char *buffer)
 __attribute__((nonnull(1)))
 bool prepare_compilation(rf_t *rf)
 {
-    char *padded_header = get_header(rf->buff);
+    char *padded_header = get_header(rf);
     char new_file_name[u_strlen(rf->file_name) + 2];
     char const *file_name = rf->file_name;
     int new_file_fd;

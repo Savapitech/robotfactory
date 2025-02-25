@@ -13,39 +13,72 @@
 
 #include "common.h"
 #include "compiler.h"
+#include "debug.h"
+#include "u_mem.h"
 #include "u_str.h"
 
 static
-char *read_file(char const *path, rf_t *rf)
+bool ensure_lines_buff_cap(rf_t *rf)
+{
+    char **new_ptr;
+
+    if (rf->lines_sz < rf->lines_cap - 1)
+        return true;
+    new_ptr = (char **)u_realloc((char *)rf->lines, sizeof *rf->lines *
+        rf->lines_sz, sizeof *rf->lines * rf->lines_cap << 1);
+    if (new_ptr == NULL)
+        return false;
+    rf->lines = new_ptr;
+    rf->lines_cap <<= 1;
+    return true;
+}
+
+static
+bool fill_line(rf_t *rf, char *buffer)
+{
+    ensure_lines_buff_cap(rf);
+    rf->lines[rf->lines_sz] = u_strdup(buffer);
+    if (rf->lines[rf->lines_sz] == NULL)
+        return false;
+    U_DEBUG("Line [%lu] [%.*s]\n", rf->lines_sz,
+        u_strlen(rf->lines[rf->lines_sz]) - 1, rf->lines[rf->lines_sz]);
+    rf->lines_sz++;
+    return true;
+}
+
+static
+bool read_file(char const *path, rf_t *rf)
 {
     FILE *file = fopen(path, "r");
-    struct stat st;
-    char *buffer;
+    char *buffer = NULL;
+    size_t buffer_sz;
 
     if (file == NULL)
         return NULL;
-    if (stat(path, &st) < 0)
-        return (fclose(file), NULL);
-    buffer = malloc(st.st_size + 1);
-    if (buffer == NULL)
-        return (fclose(file), NULL);
-    fread(buffer, sizeof *buffer, st.st_size, file);
-    buffer[st.st_size] = '\0';
-    rf->buff_sz = st.st_size;
-    return (fclose(file), buffer);
+    rf->lines = (char **)malloc(sizeof *rf->lines * rf->lines_cap);
+    if (rf->lines == NULL)
+        return (fclose(file), false);
+    for (; getline(&buffer, &buffer_sz, file) != -1;) {
+        if (u_strlen(buffer) < 2)
+            continue;
+        if (!fill_line(rf, buffer)) {
+            free((void *)rf->lines);
+            fclose(file);
+        }
+    }
+    return (fclose(file), true);
 }
 
 static
 bool handle_file(char const *path)
 {
-    rf_t rf = { .buff = NULL, 0, .file_name = path };
-    char *buffer = read_file(path, &rf);
+    rf_t rf = { .lines = NULL, .lines_sz = 0, .lines_i = 0,
+        .lines_cap = DEFAULT_LINES_CAP, .file_name = path };
 
-    if (buffer == NULL)
+    if (!read_file(path, &rf))
         return (WRITE_CONST(STDERR_FILENO, "Error: file not exist\n"), false);
-    rf.buff = buffer;
     prepare_compilation(&rf);
-    free(buffer);
+    free((void *)rf.lines);
     return true;
 }
 

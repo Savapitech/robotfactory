@@ -11,5 +11,10 @@
 
     #include "common.h"
 
+typedef struct {
+    char *name;
+    char *ptr;
+} label_t;
+
 bool prepare_compilation(rf_t *rf);
 #endif /* COMPILER_H */
