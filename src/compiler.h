@@ -12,4 +12,5 @@
     #include "common.h"
 
 bool prepare_compilation(rf_t *rf);
+void get_op_code(char *buffer);
 #endif /* COMPILER_H */
