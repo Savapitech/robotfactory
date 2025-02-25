@@ -12,6 +12,7 @@
 
 #include "common.h"
 #include "debug.h"
+#include "label.h"
 #include "op.h"
 #include "parser.h"
 #include "u_mem.h"
@@ -49,6 +50,7 @@ bool prepare_compilation(rf_t *rf)
     char const *file_name = rf->file_name;
     int new_file_fd;
 
+    parse_label_table(rf);
     file_name += u_strcspn(rf->file_name, '/') + 1;
     u_strcpy(new_file_name, file_name);
     new_file_name[u_strcspn(new_file_name, '.') + 1] = 'c';

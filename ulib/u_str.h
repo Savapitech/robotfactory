@@ -28,5 +28,7 @@ int u_strncmp(char const *, char const *, int);
 char *u_numstr(char *, int);
 int u_spacelen(char const *str);
 int u_strcspn(char const *str, char c);
+size_t u_strspn(const char *s, const char *accept);
+char *u_strchr(const char *s, char c);
 
 #endif /* STRING_H */

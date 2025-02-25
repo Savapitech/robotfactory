@@ -7,9 +7,12 @@
 
 #ifndef COMMON_H
     #define COMMON_H
+    #include <ctype.h>
     #include <stddef.h>
+
     #define WRITE_CONST(fd, str) write(fd, str, sizeof str - 1)
     #define DEFAULT_LINES_CAP 8
+    #define SKIP_SPACES(buff) while (isspace(*buff) && *buff != '\0') buff++
 
 enum {
     RETURN_SUCCESS = 0,

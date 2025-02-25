@@ -37,6 +37,7 @@ static
 bool fill_line(rf_t *rf, char *buffer)
 {
     ensure_lines_buff_cap(rf);
+    SKIP_SPACES(buffer);
     rf->lines[rf->lines_sz] = u_strdup(buffer);
     if (rf->lines[rf->lines_sz] == NULL)
         return false;
