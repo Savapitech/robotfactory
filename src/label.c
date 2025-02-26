@@ -89,8 +89,7 @@ bool parse_line(rf_t *rf, size_t i, size_t *lbl_i, size_t *ins_i)
     if (lbl_size) {
         rf->lbl_table[*lbl_i].name.str = rf->lines[i];
         rf->lbl_table[*lbl_i].name.sz = lbl_size;
-        U_DEBUG("Label [%lu] found [%d] [%.*s]\n", *lbl_i, lbl_size,
-            lbl_size, rf->lines[i]);
+        U_DEBUG("Label found [%.*s]\n", lbl_size, rf->lines[i]);
         *lbl_i += 1;
         return true;
     }
