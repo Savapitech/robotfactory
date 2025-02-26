@@ -30,5 +30,6 @@ int u_spacelen(char const *str);
 int u_strcspn(char const *str, char c);
 size_t u_strspn(const char *s, const char *accept);
 char *u_strchr(const char *s, char c);
+size_t u_strccspn(const char *s, const char *reject);
 
 #endif /* STRING_H */
