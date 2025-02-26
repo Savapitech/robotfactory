@@ -27,6 +27,11 @@ typedef struct {
 } label_t;
 
 typedef struct {
+    buff_t buff;
+    char code;
+} ins_t;
+
+typedef struct {
     // Buffer
     char **lines;
     size_t lines_sz;
@@ -35,6 +40,8 @@ typedef struct {
     // Compiler
     label_t *lbl_table;
     size_t lbl_table_sz;
+    ins_t *ins_table;
+    size_t ins_table_sz;
     // Other
     char const *file_name;
 } rf_t;
