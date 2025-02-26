@@ -31,7 +31,7 @@ CFLAGS += -Wduplicated-cond -Wformat=2 -Wshadow
 CFLAGS += -Wstrict-aliasing=0 -Wstrict-prototypes -Wunreachable-code
 CFLAGS += -Wwrite-strings -Werror=declaration-after-statement
 CFLAGS += -Werror=format-nonliteral -Werror=int-conversion -Werror=return-type
-CFLAGS += -Wno-discarded-qualifiers
+CFLAGS += -Wno-discarded-qualifiers -Wno-cast-qual
 
 LDFLAGS += -L .
 LDLIBS := -lu
