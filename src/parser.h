@@ -11,4 +11,6 @@
 
 
 buff_t get_metadata(char *buffer, char const *key);
+void get_op_code(rf_t *rf);
+
 #endif
