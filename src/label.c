@@ -64,8 +64,10 @@ ins_t get_ins(char *line)
     ins_t ins = { 0 };
 
     buff = get_ins_name(line);
-    if (buff.str == NULL)
+    if (buff.str == NULL) {
+        WRITE_CONST(STDERR_FILENO, CYAN "Invalid instruction.\n" RESET);
         return ins;
+    }
     U_DEBUG("Buff %.*s\n", buff.sz, buff.str);
     for (size_t i = 0; i < OP_TAB_SZ; i++) {
         if (u_strncmp(OP_TAB[i].mnemonique, buff.str, buff.sz) == 0) {
