@@ -41,8 +41,8 @@ bool check_instruction(buff_t buff)
     return false;
 }
 
-
-// FAIRE FONCTION QUI PREND UNE LIGNE, SI INSTRUCTION DEDANS : RENVOIE L'INS. // SINON RENVOIE RIEN ):<
+// FAIRE FONCTION QUI PREND UNE LIGNE, SI INSTRUCTION DEDANS : RENVOIE L'INS.
+// SINON RENVOIE RIEN ):<
 void get_op_code(rf_t *rf)
 {
     buff_t buff = {NULL, 0};
@@ -57,3 +57,4 @@ void get_op_code(rf_t *rf)
         }
     }
 }
+
