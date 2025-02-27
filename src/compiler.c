@@ -26,7 +26,6 @@ bool write_header(rf_t *rf)
     buff_t name;
     buff_t comment;
 
-    u_bzero(header_str, header_sz);
     *(uint32_t *)(header_str) = swap_uint32(COREWAR_EXEC_MAGIC);
     header_str += sizeof(int);
     name = get_metadata(rf->lines[rf->lines_i], NAME_CMD_STRING);

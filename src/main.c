@@ -78,14 +78,15 @@ bool handle_file(char const *path)
     rf_t rf = { .lines = NULL, .lines_sz = 0, .lines_i = 0,
         .lines_cap = DEFAULT_LINES_CAP, .file_name = path };
     struct stat st;
+    size_t header_sz = PROG_NAME_LENGTH + STRUCT_PADDING + COMMENT_LENGTH;
 
     if (!read_file(path, &rf))
         return (WRITE_CONST(STDERR_FILENO, "Error: file not exist\n"), false);
     stat(path, &st);
-    rf.final_buff.str = malloc(sizeof(char) * (st.st_size + PROG_NAME_LENGTH +
-        STRUCT_PADDING + COMMENT_LENGTH));
+    rf.final_buff.str = malloc(sizeof(char) * (st.st_size + header_sz));
     if (rf.final_buff.str == NULL)
         return (free((void *)rf.lines), false);
+    u_bzero(rf.final_buff.str, st.st_size + header_sz);
     prepare_compilation(&rf);
     for (size_t i = 0; i < rf.lines_sz; i++)
         free(rf.lines[i]);

@@ -56,10 +56,12 @@ bool get_args(op_t const *op, ins_t *ins)
 bool process_instructions(rf_t *rf)
 {
     for (size_t i = 0; i < rf->ins_table_sz; i++) {
+        rf->final_buff.str[rf->final_buff.sz] = rf->ins_table[i].code;
         if (!get_args(&OP_TAB[rf->ins_table[i].code - 1],
             &rf->ins_table[i]))
             return (WRITE_CONST(STDERR_FILENO, CYAN "Too many arguments given"
                 " to the instruction.\n" RESET));
+        rf->final_buff.sz += 1;
     }
     return true;
 }
