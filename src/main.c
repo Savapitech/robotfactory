@@ -14,6 +14,7 @@
 #include "common.h"
 #include "compiler.h"
 #include "debug.h"
+#include "op.h"
 #include "u_mem.h"
 #include "u_str.h"
 
@@ -67,6 +68,7 @@ bool read_file(char const *path, rf_t *rf)
             return (fclose(file), false);
         }
     }
+    free(buffer);
     return (fclose(file), true);
 }
 
@@ -80,13 +82,17 @@ bool handle_file(char const *path)
     if (!read_file(path, &rf))
         return (WRITE_CONST(STDERR_FILENO, "Error: file not exist\n"), false);
     stat(path, &st);
-    rf.final_buff.sz = st.st_size;
-    rf.final_buff.str = malloc(st.st_size);
+    rf.final_buff.str = malloc(sizeof(char) * (st.st_size + PROG_NAME_LENGTH +
+        STRUCT_PADDING + COMMENT_LENGTH));
     if (rf.final_buff.str == NULL)
         return (free((void *)rf.lines), false);
     prepare_compilation(&rf);
+    for (size_t i = 0; i < rf.lines_sz; i++)
+        free(rf.lines[i]);
     free((void *)rf.lines);
     free(rf.final_buff.str);
+    free(rf.lbl_table);
+    free(rf.ins_table);
     return true;
 }
 
