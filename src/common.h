@@ -23,13 +23,23 @@ enum {
 
 typedef struct {
     buff_t name;
-    char *ptr;
+    int ins_pos;
 } label_t;
 
 typedef struct {
     buff_t buff;
     char code;
 } ins_t;
+
+typedef struct {
+    union {
+        char reg;
+        short idx;
+        int dir;
+    };
+    buff_t *buff;
+    size_t size;
+} arg_t;
 
 typedef struct {
     // Buffer

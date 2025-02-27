@@ -90,7 +90,8 @@ bool parse_line(rf_t *rf, size_t i, size_t *lbl_i, size_t *ins_i)
     if (lbl_size) {
         rf->lbl_table[*lbl_i].name.str = rf->lines[i];
         rf->lbl_table[*lbl_i].name.sz = lbl_size;
-        U_DEBUG("Label found [%.*s]\n", lbl_size, rf->lines[i]);
+        rf->lbl_table[*lbl_i].ins_pos = *ins_i;
+        U_DEBUG("Label found [%.*s] [%lu]\n", lbl_size, rf->lines[i], *ins_i);
         *lbl_i += 1;
         return true;
     }
@@ -99,8 +100,7 @@ bool parse_line(rf_t *rf, size_t i, size_t *lbl_i, size_t *ins_i)
     rf->ins_table[*ins_i] = get_ins(rf->lines[i]);
     if (rf->ins_table[*ins_i].buff.str == NULL)
         return false;
-    U_DEBUG("Ins found [%.*s] code [%d]\n", rf->ins_table[*ins_i].buff.sz,
-        rf->ins_table[*ins_i].buff.str, rf->ins_table[*ins_i].code);
+    U_DEBUG("Ins found code [%d]\n", rf->ins_table[*ins_i].code);
     *ins_i += 1;
     return true;
 }

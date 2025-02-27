@@ -25,6 +25,8 @@
     #define COMMENT_CMD_STRING ".comment"
 
     #define REG_NUMBER 16 /* r1 <--> rx */
+
+    #define IS_IDX(opcode) (opcode >= 9 && opcode <= 15 && opcode != 13)
 typedef char args_type_t;
 
     #define T_REG 1 /* register */
