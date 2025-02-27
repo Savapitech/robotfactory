@@ -43,28 +43,31 @@ char *get_header(rf_t *rf)
     return header - (header_sz - COMMENT_LENGTH) - sizeof(int);
 }
 
-__attribute__((nonnull(1)))
-bool prepare_compilation(rf_t *rf)
+static
+bool write_in_file(rf_t *rf, char *header)
 {
-    char *padded_header = get_header(rf);
     char new_file_name[u_strlen(rf->file_name) + 2];
     char const *file_name = rf->file_name;
     int new_file_fd;
 
-    parse_label_table(rf);
-    process_instructions(rf);
     file_name += u_strcspn(rf->file_name, '/') + 1;
     u_strcpy(new_file_name, file_name);
-    new_file_name[u_strcspn(new_file_name, '.') + 1] = 'c';
-    new_file_name[u_strcspn(new_file_name, '.') + 2] = 'o';
-    new_file_name[u_strcspn(new_file_name, '.') + 3] = 'r';
-    new_file_name[u_strcspn(new_file_name, '.') + 4] = '\0';
+    u_strcpy(new_file_name + u_strcspn(new_file_name, '.') + 1, "cor\0");
     new_file_fd = open(new_file_name, O_WRONLY | O_CREAT, 0644);
     U_DEBUG("Writing in file [%s]\n", new_file_name);
     if (new_file_fd == -1)
         return (WRITE_CONST(STDERR_FILENO, "Cannot write in file !\n"), false);
-    write(new_file_fd, padded_header, sizeof(char) * (PROG_NAME_LENGTH +
+    write(new_file_fd, header, sizeof(char) * (PROG_NAME_LENGTH +
             COMMENT_LENGTH));
-    close(new_file_fd);
-    return true;
+    return (close(new_file_fd), true);
+}
+
+__attribute__((nonnull(1)))
+bool prepare_compilation(rf_t *rf)
+{
+    char *padded_header = get_header(rf);
+
+    parse_label_table(rf);
+    process_instructions(rf);
+    return write_in_file(rf, padded_header);
 }
