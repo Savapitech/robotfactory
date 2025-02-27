@@ -12,4 +12,5 @@
     #include "common.h"
 
 bool prepare_compilation(rf_t *rf);
+bool process_instructions(rf_t *rf);
 #endif /* COMPILER_H */
