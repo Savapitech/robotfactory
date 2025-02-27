@@ -72,6 +72,7 @@ ins_t get_ins(char *line)
         if (u_strncmp(OP_TAB[i].mnemonique, buff.str, buff.sz) == 0) {
             ins.code = OP_TAB[i].code;
             ins.buff = buff;
+            ins.has_cb = (OP_TAB[i].nbr_args > 1 || *OP_TAB[i].type != T_DIR);
             break;
         }
     }

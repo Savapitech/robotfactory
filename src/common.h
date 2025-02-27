@@ -8,7 +8,9 @@
 #ifndef COMMON_H
     #define COMMON_H
     #include <ctype.h>
+    #include <stdbool.h>
     #include <stddef.h>
+    #include <stdint.h>
 
     #include "u_str.h"
 
@@ -29,6 +31,8 @@ typedef struct {
 typedef struct {
     buff_t buff;
     char code;
+    uint8_t cb;
+    bool has_cb;
 } ins_t;
 
 typedef struct {

@@ -27,12 +27,18 @@
     #define REG_NUMBER 16 /* r1 <--> rx */
 
     #define IS_IDX(opcode) (opcode >= 9 && opcode <= 15 && opcode != 13)
+    #define CALC_CB(type) ((type & T_ALL) == T_IND ? 3 : (type & T_ALL))
+
 typedef char args_type_t;
 
-    #define T_REG 1 /* register */
-    #define T_DIR 2 /* direct  (ld  #1,r1  put 1 into r1) */
-    #define T_IND 4
-    #define T_LAB 8 /* LABEL */
+enum {
+    T_REG = 1, /* register */
+    T_DIR = 2, /* direct (ld #1,r1 put 1 into r1) */
+    T_IND = 4, /* indirect always relative */
+    T_LAB = 8,
+
+    T_ALL = T_REG | T_IND | T_DIR,
+};
 
 typedef struct op_s {
     char const *mnemonique;

@@ -6,7 +6,6 @@
 */
 
 #include <stdbool.h>
-#include <stdint.h>
 #include <unistd.h>
 
 #include "common.h"
@@ -53,11 +52,26 @@ bool write_value(rf_t *rf, arg_t *arg)
 }
 
 static
+bool process_arg_dir_idx(rf_t *rf, arg_t *arg, char type, ins_t *ins)
+{
+    arg->size = (!(type & T_DIR) || IS_IDX(ins->code))
+        ? sizeof(short) : sizeof(int);
+    if (type & T_DIR && !(type & T_LAB)) {
+        arg->buff->str++;
+        if (!u_strnum(arg->buff->str, &arg->dir))
+            return false;
+        write_value(rf, arg);
+    }
+    return true;
+}
+
+static
 bool process_arg(rf_t *rf, buff_t *arg_buffp, ins_t *ins)
 {
     arg_t arg = { .buff = arg_buffp, .size = sizeof(char) };
     char type = get_arg_type(arg.buff->str);
 
+    ins->cb = (ins->cb << 2) | CALC_CB(type);
     if (type & T_REG) {
         arg.buff->str++;
         if (!u_strnum(arg.buff->str, &arg.dir) || !arg.dir || arg.dir >
@@ -66,15 +80,7 @@ bool process_arg(rf_t *rf, buff_t *arg_buffp, ins_t *ins)
                 CYAN "Invalid register number.\n" RESET), false);
         write_value(rf, &arg);
     }
-    arg.size = (!(type & T_DIR) || IS_IDX(ins->code))
-        ? sizeof(short) : sizeof(int);
-    if (type & T_DIR && !(type & T_LAB)) {
-        arg.buff->str++;
-        if (!u_strnum(arg.buff->str, &arg.dir))
-            return false;
-        write_value(rf, &arg);
-    }
-    return true;
+    return process_arg_dir_idx(rf, &arg, type, ins);
 }
 
 static
@@ -107,10 +113,14 @@ int get_args(rf_t *rf, op_t const *op, ins_t *ins, size_t ins_idx)
 bool process_instructions(rf_t *rf)
 {
     int get_args_result;
+    size_t old_buff_sz;
 
     for (size_t i = 0; i < rf->ins_table_sz; i++) {
+        old_buff_sz = rf->final_buff.sz;
         rf->final_buff.str[rf->final_buff.sz] = rf->ins_table[i].code;
         rf->final_buff.sz++;
+        if (rf->ins_table[i].has_cb)
+            rf->final_buff.sz++;
         get_args_result = get_args(rf, &OP_TAB[rf->ins_table[i].code - 1],
             &rf->ins_table[i], i);
         if (get_args_result == -1)
@@ -118,6 +128,9 @@ bool process_instructions(rf_t *rf)
                 " to the instruction.\n" RESET));
         if (get_args_result == -2)
             return false;
+        if (rf->ins_table[i].has_cb)
+            rf->final_buff.str[old_buff_sz + 1] = rf->ins_table[i].cb << (2 * (
+                MAX_ARGS_NUMBER - OP_TAB[rf->ins_table[i].code - 1].nbr_args));
     }
     return true;
 }
