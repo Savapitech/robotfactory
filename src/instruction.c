@@ -62,6 +62,17 @@ bool process_arg_dir_idx(rf_t *rf, arg_t *arg, char type, ins_t *ins)
             return false;
         write_value(rf, arg);
     }
+    if (type & T_IND) {
+        if (!u_strnum(arg->buff->str, &arg->dir))
+            return false;
+        arg->idx = arg->dir;
+        arg->size = 2;
+        write_value(rf, arg);
+    }
+    if (type & T_LAB) {
+        arg_t a = { .idx = -1, .size = sizeof(short) };
+        write_value(rf, &a);
+    }
     return true;
 }
 
