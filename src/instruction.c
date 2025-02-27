@@ -35,6 +35,8 @@ bool write_value(rf_t *rf, arg_t *arg)
 {
     char *fbuff_ptr = rf->final_buff.str + rf->final_buff.sz;
 
+    U_DEBUG("Writing [%lu] byte%s value [%d]\n", arg->size,
+        (arg->size > 1 ? "s" : ""), arg->dir);
     if (arg->size == sizeof(char)) {
         u_memcpy(fbuff_ptr, &arg->reg, sizeof(arg->reg));
         rf->final_buff.sz++;
@@ -47,8 +49,6 @@ bool write_value(rf_t *rf, arg_t *arg)
         u_memcpy(fbuff_ptr, &arg->dir, sizeof arg->dir);
         rf->final_buff.sz += sizeof arg->dir;
     }
-    U_DEBUG(RED "Writing [%lu] byte%s value [%d]\n" RESET, arg->size,
-        (arg->size > 1 ? "s" : ""), arg->dir);
     return true;
 }
 
@@ -58,12 +58,12 @@ bool process_arg(rf_t *rf, buff_t *arg_buffp, ins_t *ins)
     arg_t arg = { .buff = arg_buffp, .size = sizeof(char) };
     char type = get_arg_type(arg.buff->str);
 
-    U_DEBUG("Type [%d]\n", type);
     if (type & T_REG) {
         arg.buff->str++;
         if (!u_strnum(arg.buff->str, &arg.dir) || !arg.dir || arg.dir >
             REG_NUMBER)
-            return (WRITE_CONST(STDERR_FILENO, "Invalid reg nbr.\n"), false);
+            return (WRITE_CONST(STDERR_FILENO,
+                CYAN "Invalid register number.\n" RESET), false);
         write_value(rf, &arg);
     }
     arg.size = (!(type & T_DIR) || IS_IDX(ins->code))
@@ -78,7 +78,7 @@ bool process_arg(rf_t *rf, buff_t *arg_buffp, ins_t *ins)
 }
 
 static
-bool get_args(rf_t *rf, op_t const *op, ins_t *ins, size_t ins_idx)
+int get_args(rf_t *rf, op_t const *op, ins_t *ins, size_t ins_idx)
 {
     char *ins_arg_str = ins->buff.str + ins->buff.sz + 1;
     buff_t arg_buff;
@@ -95,23 +95,29 @@ bool get_args(rf_t *rf, op_t const *op, ins_t *ins, size_t ins_idx)
         arg_count++;
         U_DEBUG("Found arg [%.*s] [%.*s]\n", ins->buff.sz, ins->buff.str,
             arg_buff.sz, arg_buff.str);
-        process_arg(rf, &arg_buff, ins);
+        if (!process_arg(rf, &arg_buff, ins))
+            return -2;
         ins_arg_str = arg_buff.str + arg_buff.sz;
     }
     if (arg_count != (size_t)op->nbr_args)
-        return false;
-    return true;
+        return -1;
+    return 0;
 }
 
 bool process_instructions(rf_t *rf)
 {
+    int get_args_result;
+
     for (size_t i = 0; i < rf->ins_table_sz; i++) {
         rf->final_buff.str[rf->final_buff.sz] = rf->ins_table[i].code;
         rf->final_buff.sz++;
-        if (!get_args(rf, &OP_TAB[rf->ins_table[i].code - 1],
-            &rf->ins_table[i], i))
+        get_args_result = get_args(rf, &OP_TAB[rf->ins_table[i].code - 1],
+            &rf->ins_table[i], i);
+        if (get_args_result == -1)
             return (WRITE_CONST(STDERR_FILENO, CYAN "Too many arguments given"
                 " to the instruction.\n" RESET));
+        if (get_args_result == -2)
+            return false;
     }
     return true;
 }

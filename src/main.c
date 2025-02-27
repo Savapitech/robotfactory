@@ -39,9 +39,11 @@ bool fill_line(rf_t *rf, char *buffer)
 {
     ensure_lines_buff_cap(rf);
     SKIP_SPACES(buffer);
-    rf->lines[rf->lines_sz] = u_strdup(buffer);
+    rf->lines[rf->lines_sz] = malloc(sizeof(char) * (u_strlen(buffer) + 2));
     if (rf->lines[rf->lines_sz] == NULL)
         return false;
+    u_bzero(rf->lines[rf->lines_sz], u_strlen(buffer) + 2);
+    u_strcpy(rf->lines[rf->lines_sz], buffer);
     U_DEBUG("Line [%lu] [%.*s]\n", rf->lines_sz,
         u_strlen(rf->lines[rf->lines_sz]) - 1, rf->lines[rf->lines_sz]);
     rf->lines_sz++;

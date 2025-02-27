@@ -60,13 +60,15 @@ bool write_in_file(rf_t *rf)
     return (close(new_file_fd), true);
 }
 
-__attribute__((nonnull(1)))
+__attribute__((nonnull))
 bool prepare_compilation(rf_t *rf)
 {
     if (!write_header(rf))
         return (WRITE_CONST(STDERR_FILENO, CYAN "Cannot parse header.\n"
             RESET), false);
-    parse_label_table(rf);
-    process_instructions(rf);
+    if (!parse_label_table(rf))
+        return false;
+    if (!process_instructions(rf))
+        return false;
     return write_in_file(rf);
 }
