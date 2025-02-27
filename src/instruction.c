@@ -110,9 +110,19 @@ int get_args(rf_t *rf, op_t const *op, ins_t *ins, size_t ins_idx)
     return 0;
 }
 
+static
+bool get_args_result_handling(int result)
+{
+    if (result == -1)
+        return (WRITE_CONST(STDERR_FILENO, CYAN "Too many arguments given"
+            " to the instruction.\n" RESET), false);
+    if (result < -1)
+        return false;
+    return true;
+}
+
 bool process_instructions(rf_t *rf)
 {
-    int get_args_result;
     size_t old_buff_sz;
 
     for (size_t i = 0; i < rf->ins_table_sz; i++) {
@@ -121,12 +131,8 @@ bool process_instructions(rf_t *rf)
         rf->final_buff.sz++;
         if (rf->ins_table[i].has_cb)
             rf->final_buff.sz++;
-        get_args_result = get_args(rf, &OP_TAB[rf->ins_table[i].code - 1],
-            &rf->ins_table[i], i);
-        if (get_args_result == -1)
-            return (WRITE_CONST(STDERR_FILENO, CYAN "Too many arguments given"
-                " to the instruction.\n" RESET));
-        if (get_args_result == -2)
+        if (!get_args_result_handling(get_args(rf,
+            &OP_TAB[rf->ins_table[i].code - 1], &rf->ins_table[i], i)))
             return false;
         if (rf->ins_table[i].has_cb)
             rf->final_buff.str[old_buff_sz + 1] = rf->ins_table[i].cb << (2 * (
