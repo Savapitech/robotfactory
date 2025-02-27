@@ -5,7 +5,7 @@
 ** Task 1
 */
 
-__attribute__((nonnull(1, 2)))
+__attribute__((nonnull))
 char *u_strcpy(char *dest, char const *src)
 {
     int i = 0;
