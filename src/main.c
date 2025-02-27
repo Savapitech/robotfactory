@@ -64,7 +64,7 @@ bool read_file(char const *path, rf_t *rf)
             continue;
         if (!fill_line(rf, buffer)) {
             free((void *)rf->lines);
-            fclose(file);
+            return (fclose(file), false);
         }
     }
     return (fclose(file), true);
@@ -75,11 +75,18 @@ bool handle_file(char const *path)
 {
     rf_t rf = { .lines = NULL, .lines_sz = 0, .lines_i = 0,
         .lines_cap = DEFAULT_LINES_CAP, .file_name = path };
+    struct stat st;
 
     if (!read_file(path, &rf))
         return (WRITE_CONST(STDERR_FILENO, "Error: file not exist\n"), false);
+    stat(path, &st);
+    rf.final_buff.sz = st.st_size;
+    rf.final_buff.str = malloc(st.st_size);
+    if (rf.final_buff.str == NULL)
+        return (free((void *)rf.lines), false);
     prepare_compilation(&rf);
     free((void *)rf.lines);
+    free(rf.final_buff.str);
     return true;
 }
 
