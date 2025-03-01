@@ -22,7 +22,7 @@
 static
 bool write_header(rf_t *rf)
 {
-    size_t header_sz = PROG_NAME_LENGTH + STRUCT_PADDING + COMMENT_LENGTH;
+    size_t header_sz = PROG_NAME_LENGTH + STRUCT_PADDING + COMMENT_LENGTH + 4;
     char *header_str = rf->final_buff.str;
     buff_t name;
     buff_t comment;
@@ -38,7 +38,7 @@ bool write_header(rf_t *rf)
     u_strncpy(header_str, name.str, name.sz);
     header_str += header_sz - COMMENT_LENGTH;
     u_strncpy(header_str, comment.str, comment.sz);
-    rf->final_buff.sz = header_sz;
+    rf->final_buff.sz = header_sz + 8;
     return true;
 }
 

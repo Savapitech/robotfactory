@@ -85,10 +85,10 @@ bool handle_file(char const *path)
     if (!read_file(path, &rf))
         return (WRITE_CONST(STDERR_FILENO, "Error: file not exist\n"), false);
     stat(path, &st);
-    rf.final_buff.str = malloc(sizeof(char) * (st.st_size + header_sz));
+    rf.final_buff.str = malloc(sizeof(char) * (st.st_size + header_sz + 4));
     if (rf.final_buff.str == NULL)
         return (free((void *)rf.lines), false);
-    u_bzero(rf.final_buff.str, st.st_size + header_sz);
+    u_bzero(rf.final_buff.str, st.st_size + header_sz + 4);
     prepare_compilation(&rf);
     for (size_t i = 0; i < rf.lines_sz; i++)
         free(rf.lines[i]);
