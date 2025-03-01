@@ -87,8 +87,7 @@ bool process_arg(rf_t *rf, buff_t *arg_buffp, ins_t *ins)
         arg.buff->str++;
         if (!u_strnum(arg.buff->str, &arg.dir) || !arg.dir || arg.dir >
             REG_NUMBER)
-            return (WRITE_CONST(STDERR_FILENO,
-                CYAN "Invalid register number.\n" RESET), false);
+            return (print_error(rf, "Invalid register number.", false), false);
         write_value(rf, &arg);
     }
     return process_arg_dir_idx(rf, &arg, type, ins);
@@ -120,11 +119,11 @@ int get_args(rf_t *rf, op_t const *op, ins_t *ins, size_t ins_idx)
 }
 
 static
-bool get_args_result_handling(int result)
+bool get_args_result_handling(rf_t *rf, int result)
 {
     if (result == -1)
-        return (WRITE_CONST(STDERR_FILENO, CYAN "Too many arguments given"
-            " to the instruction.\n" RESET), false);
+        return (print_error(rf, "Too many arguments given to the instruction.",
+            false), false);
     if (result < -1)
         return false;
     return true;
@@ -140,7 +139,7 @@ bool process_instructions(rf_t *rf)
         rf->final_buff.sz++;
         if (rf->ins_table[i].has_cb)
             rf->final_buff.sz++;
-        if (!get_args_result_handling(get_args(rf,
+        if (!get_args_result_handling(rf, get_args(rf,
             &OP_TAB[rf->ins_table[i].code - 1], &rf->ins_table[i], i)))
             return false;
         if (rf->ins_table[i].has_cb)

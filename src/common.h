@@ -52,13 +52,15 @@ typedef struct {
     size_t lines_cap;
     size_t lines_i;
     buff_t final_buff;
+    size_t lines_total_sz;
     // Compiler
     label_t *lbl_table;
     size_t lbl_table_sz;
     ins_t *ins_table;
     size_t ins_table_sz;
     // Other
-    char const *file_name;
+    char *file_name;
 } rf_t;
 
+void print_error(rf_t *rf, char const *msg, bool warning);
 #endif /* COMMON_H */

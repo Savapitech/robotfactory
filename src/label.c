@@ -58,14 +58,14 @@ buff_t get_ins_name(char *line)
 }
 
 static
-ins_t get_ins(char *line)
+ins_t get_ins(rf_t *rf, char *line)
 {
     buff_t buff = { NULL, 0 };
     ins_t ins = { 0 };
 
     buff = get_ins_name(line);
     if (buff.str == NULL) {
-        WRITE_CONST(STDERR_FILENO, CYAN "Invalid instruction.\n" RESET);
+        print_error(rf, "Invalind instruction", false);
         return ins;
     }
     for (size_t i = 0; i < OP_TAB_SZ; i++) {
@@ -77,7 +77,7 @@ ins_t get_ins(char *line)
         }
     }
     if (!ins.code)
-        WRITE_CONST(STDERR_FILENO, CYAN "Invalid instruction.\n" RESET);
+        print_error(rf, "Invalind instruction", false);
     return ins;
 }
 
@@ -98,7 +98,7 @@ bool parse_line(rf_t *rf, size_t i, size_t *lbl_i, size_t *ins_i)
     }
     if (!rf->ins_table_sz)
         return true;
-    rf->ins_table[*ins_i] = get_ins(rf->lines[i]);
+    rf->ins_table[*ins_i] = get_ins(rf, rf->lines[i]);
     if (rf->ins_table[*ins_i].buff.str == NULL)
         return false;
     U_DEBUG("Ins found code [%d]\n", rf->ins_table[*ins_i].code);

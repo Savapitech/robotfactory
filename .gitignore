@@ -40,3 +40,8 @@ unit_tests
 # Debug
 .dbug
 debug
+
+*.cor2
+fixtures
+validator*
+asm_ref
