@@ -14,6 +14,7 @@
 #include "common.h"
 #include "compiler.h"
 #include "debug.h"
+#include "op.h"
 #include "u_mem.h"
 #include "u_str.h"
 
@@ -38,9 +39,11 @@ bool fill_line(rf_t *rf, char *buffer)
 {
     ensure_lines_buff_cap(rf);
     SKIP_SPACES(buffer);
-    rf->lines[rf->lines_sz] = u_strdup(buffer);
+    rf->lines[rf->lines_sz] = malloc(sizeof(char) * (u_strlen(buffer) + 2));
     if (rf->lines[rf->lines_sz] == NULL)
         return false;
+    u_bzero(rf->lines[rf->lines_sz], u_strlen(buffer) + 2);
+    u_strcpy(rf->lines[rf->lines_sz], buffer);
     U_DEBUG("Line [%lu] [%.*s]\n", rf->lines_sz,
         u_strlen(rf->lines[rf->lines_sz]) - 1, rf->lines[rf->lines_sz]);
     rf->lines_sz++;
@@ -64,9 +67,10 @@ bool read_file(char const *path, rf_t *rf)
             continue;
         if (!fill_line(rf, buffer)) {
             free((void *)rf->lines);
-            fclose(file);
+            return (fclose(file), false);
         }
     }
+    free(buffer);
     return (fclose(file), true);
 }
 
@@ -75,11 +79,23 @@ bool handle_file(char const *path)
 {
     rf_t rf = { .lines = NULL, .lines_sz = 0, .lines_i = 0,
         .lines_cap = DEFAULT_LINES_CAP, .file_name = path };
+    struct stat st;
+    size_t header_sz = PROG_NAME_LENGTH + STRUCT_PADDING + COMMENT_LENGTH;
 
     if (!read_file(path, &rf))
         return (WRITE_CONST(STDERR_FILENO, "Error: file not exist\n"), false);
+    stat(path, &st);
+    rf.final_buff.str = malloc(sizeof(char) * (st.st_size + header_sz + 4));
+    if (rf.final_buff.str == NULL)
+        return (free((void *)rf.lines), false);
+    u_bzero(rf.final_buff.str, st.st_size + header_sz + 4);
     prepare_compilation(&rf);
+    for (size_t i = 0; i < rf.lines_sz; i++)
+        free(rf.lines[i]);
     free((void *)rf.lines);
+    free(rf.final_buff.str);
+    free(rf.lbl_table);
+    free(rf.ins_table);
     return true;
 }
 

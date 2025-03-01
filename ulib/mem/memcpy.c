@@ -8,9 +8,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void *u_memcpy(uint8_t *dest, uint8_t const *src, size_t n)
+void *u_memcpy(void *dest, void const *src, size_t n)
 {
-    for (size_t i = 0; i < n; i++)
-        dest[i] = src[i];
+    uint8_t const *srcp = src;
+
+    if (dest == NULL || src == NULL)
+        return NULL;
+    for (uint8_t *destp = dest; n != 0; n--) {
+        *destp = *srcp;
+        destp++;
+        srcp++;
+    }
     return dest;
 }

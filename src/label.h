@@ -11,10 +11,5 @@
 
     #include "common.h"
 
-typedef struct {
-    char *name;
-    char *ptr;
-} label_t;
-
 bool parse_label_table(rf_t *rf);
 #endif /* LABEL_H */
