@@ -62,9 +62,11 @@ void print_error(rf_t *rf, char const *msg, bool warning)
         return;
     WRITE_CONST(STDERR_FILENO, "asm, ");
     write(STDERR_FILENO, rf->file_name, u_strlen(rf->file_name));
-    WRITE_CONST(STDERR_FILENO, ", line : " CYAN);
+    WRITE_CONST(STDERR_FILENO, ", line ");
+    u_putnbr(rf->lines_i + (rf->lines_total_sz - rf->lines_sz));
+    WRITE_CONST(STDERR_FILENO, ": " CYAN);
     if (warning)
-        WRITE_CONST(STDERR_FILENO, RED "Warning: ");
+        WRITE_CONST(STDERR_FILENO, RED "Warning: " CYAN);
     write(STDERR_FILENO, msg, u_strlen(msg));
     WRITE_CONST(STDERR_FILENO, "\n" RESET);
 }

@@ -52,6 +52,7 @@ typedef struct {
     size_t lines_cap;
     size_t lines_i;
     buff_t final_buff;
+    size_t lines_total_sz;
     // Compiler
     label_t *lbl_table;
     size_t lbl_table_sz;

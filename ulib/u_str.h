@@ -33,5 +33,6 @@ char *u_strchr(const char *s, char c);
 size_t u_strccspn(const char *s, const char *reject);
 int u_strnum(char *strp, int *n);
 int u_strcrspn(char const *str, char c);
+int u_putnbr(int n);
 
 #endif /* STRING_H */
