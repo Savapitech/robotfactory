@@ -70,8 +70,8 @@ bool process_arg_dir_idx(rf_t *rf, arg_t *arg, char type, ins_t *ins)
         write_value(rf, arg);
     }
     if (type & T_LAB) {
-        arg_t a = { .idx = -1, .size = sizeof(short) };
-        write_value(rf, &a);
+        arg->idx = -1;
+        write_value(rf, arg);
     }
     return true;
 }
@@ -110,8 +110,6 @@ int get_args(rf_t *rf, op_t const *op, ins_t *ins, size_t ins_idx)
         if (arg_buff.sz < 1 || *arg_buff.str == '\0')
             continue;
         arg_count++;
-        U_DEBUG("Found arg [%.*s] [%.*s]\n", ins->buff.sz, ins->buff.str,
-            arg_buff.sz, arg_buff.str);
         if (!process_arg(rf, &arg_buff, ins))
             return -2;
         ins_arg_str = arg_buff.str + arg_buff.sz;
