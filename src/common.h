@@ -58,7 +58,8 @@ typedef struct {
     ins_t *ins_table;
     size_t ins_table_sz;
     // Other
-    char const *file_name;
+    char *file_name;
 } rf_t;
 
+void print_error(rf_t *rf, char const *msg, bool warning);
 #endif /* COMMON_H */

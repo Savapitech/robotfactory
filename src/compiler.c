@@ -45,19 +45,28 @@ bool write_header(rf_t *rf)
 static
 bool write_in_file(rf_t *rf)
 {
-    char new_file_name[u_strlen(rf->file_name) + 2];
-    char const *file_name = rf->file_name;
     int new_file_fd;
 
-    file_name += u_strcspn(rf->file_name, '/') + 1;
-    u_strcpy(new_file_name, file_name);
-    u_strcpy(new_file_name + u_strcspn(new_file_name, '.') + 1, "cor\0");
-    new_file_fd = open(new_file_name, O_WRONLY | O_CREAT, 0644);
-    U_DEBUG("Writing in file [%s]\n", new_file_name);
+    u_strcpy(rf->file_name + u_strcspn(rf->file_name, '.') + 1, "cor\0");
+    new_file_fd = open(rf->file_name, O_WRONLY | O_CREAT, 0644);
+    U_DEBUG("Writing in file [%s]\n", rf->file_name);
     if (new_file_fd == -1)
         return (WRITE_CONST(STDERR_FILENO, "Cannot write in file !\n"), false);
     write(new_file_fd, rf->final_buff.str, rf->final_buff.sz);
     return (close(new_file_fd), true);
+}
+
+void print_error(rf_t *rf, char const *msg, bool warning)
+{
+    if (rf->file_name == NULL)
+        return;
+    WRITE_CONST(STDERR_FILENO, "asm, ");
+    write(STDERR_FILENO, rf->file_name, u_strlen(rf->file_name));
+    WRITE_CONST(STDERR_FILENO, ", line : " CYAN);
+    if (warning)
+        WRITE_CONST(STDERR_FILENO, RED "Warning: ");
+    write(STDERR_FILENO, msg, u_strlen(msg));
+    WRITE_CONST(STDERR_FILENO, "\n" RESET);
 }
 
 __attribute__((nonnull))

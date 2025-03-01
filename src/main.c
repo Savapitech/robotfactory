@@ -75,10 +75,10 @@ bool read_file(char const *path, rf_t *rf)
 }
 
 static
-bool handle_file(char const *path)
+bool handle_file(char const *path, char *file_name)
 {
     rf_t rf = { .lines = NULL, .lines_sz = 0, .lines_i = 0,
-        .lines_cap = DEFAULT_LINES_CAP, .file_name = path };
+        .lines_cap = DEFAULT_LINES_CAP, .file_name = file_name };
     struct stat st;
     size_t header_sz = PROG_NAME_LENGTH + STRUCT_PADDING + COMMENT_LENGTH;
 
@@ -102,10 +102,21 @@ bool handle_file(char const *path)
 int main(int ac, char **av)
 {
     bool status = true;
+    char *file_name;
+    int slash_len;
+    int file_name_len;
 
     if (ac < 2)
-        return 0;
-    for (int i = 1; i < ac; i++)
-        status &= handle_file(av[i]);
+        return (WRITE_CONST(STDERR_FILENO, "Too few arguments\n"),
+            RETURN_SUCCESS);
+    for (int i = 1; i < ac; i++) {
+        slash_len = u_strcrspn(av[i], '/') + 1;
+        file_name_len = u_strlen(av[i] + slash_len) + 4;
+        file_name = malloc(sizeof(char) * file_name_len);
+        u_strcpy(file_name, av[i] + slash_len);
+        if (file_name == NULL)
+            return RETURN_FAILURE;
+        status &= handle_file(av[i], file_name);
+    }
     return status ? RETURN_SUCCESS : RETURN_FAILURE;
 }
