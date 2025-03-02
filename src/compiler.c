@@ -20,26 +20,42 @@
 #include "u_mem.h"
 
 static
-bool write_header(rf_t *rf)
+int write_header2(size_t header_sz, char *header_str, buff_t *name,
+    buff_t *comment)
+{
+    int result = 0;
+
+    u_strncpy(header_str, name->str, name->sz);
+    if (!comment->str)
+        result = -2;
+    else {
+        header_str += header_sz - COMMENT_LENGTH;
+        u_strncpy(header_str, comment->str, comment->sz);
+    }
+    return result;
+}
+
+static
+int write_header(rf_t *rf)
 {
     size_t header_sz = PROG_NAME_LENGTH + STRUCT_PADDING + COMMENT_LENGTH + 4;
     char *header_str = rf->final_buff.str;
     buff_t name;
     buff_t comment;
+    int result = 0;
 
     *(uint32_t *)(header_str) = swap_uint32(COREWAR_EXEC_MAGIC);
     header_str += sizeof(int);
     name = get_metadata(rf->lines[rf->lines_i], NAME_CMD_STRING);
+    if (name.str == NULL)
+        return -1;
     rf->lines_i++;
     comment = get_metadata(rf->lines[rf->lines_i], COMMENT_CMD_STRING);
-    rf->lines_i++;
-    if (name.str == NULL || comment.str == NULL)
-        return false;
-    u_strncpy(header_str, name.str, name.sz);
-    header_str += header_sz - COMMENT_LENGTH;
-    u_strncpy(header_str, comment.str, comment.sz);
+    if (comment.str)
+        rf->lines_i++;
+    result = write_header2(header_sz, header_str, &name, &comment);
     rf->final_buff.sz = header_sz + 8;
-    return true;
+    return result;
 }
 
 static
@@ -74,8 +90,20 @@ void print_error(rf_t *rf, char const *msg, bool warning)
 __attribute__((nonnull))
 bool prepare_compilation(rf_t *rf)
 {
-    if (!write_header(rf))
-        return (print_error(rf, "Cannot parse header.", false), false);
+    int write_header_result = write_header(rf);
+
+    if (write_header_result < 0) {
+        switch (write_header_result) {
+            case -1:
+                print_error(rf, "Name required !", false);
+                return false;
+            case -2:
+                print_error(rf, "No comment specified.", true);
+                break;
+            default:
+                return (print_error(rf, "Cannot parse header.", false), false);
+        }
+    }
     if (!parse_label_table(rf))
         return false;
     if (!process_instructions(rf))
