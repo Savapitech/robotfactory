@@ -51,6 +51,8 @@ int write_header(rf_t *rf)
         return -1;
     rf->lines_i++;
     comment = get_metadata(rf->lines[rf->lines_i], COMMENT_CMD_STRING);
+    if (comment.sz > COMMENT_LENGTH || (comment.sz < 1 && comment.str))
+        return comment.sz > COMMENT_LENGTH ? -3 : -4;
     if (comment.str)
         rf->lines_i++;
     result = write_header2(header_sz, header_str, &name, &comment);
@@ -90,23 +92,35 @@ void print_error(rf_t *rf, char const *msg, bool warning)
     WRITE_CONST(STDERR_FILENO, "\n" RESET);
 }
 
+static
+bool write_header_error_handling(rf_t *rf, int write_header_result)
+{
+    switch (write_header_result) {
+        case -1:
+            print_error(rf, "No name specified.", false);
+            return false;
+        case -2:
+            print_error(rf, "No comment specified.", true);
+            return true;
+        case -3:
+            print_error(rf, "The comment is too long.", false);
+            return false;
+        case -4:
+            print_error(rf, "No comment specified.", false);
+            return false;
+    }
+    print_error(rf, "Cannot parse header !", false);
+    return false;
+}
+
 __attribute__((nonnull))
 bool prepare_compilation(rf_t *rf)
 {
     int write_header_result = write_header(rf);
 
-    if (write_header_result < 0) {
-        switch (write_header_result) {
-            case -1:
-                print_error(rf, "Name required !", false);
-                return false;
-            case -2:
-                print_error(rf, "No comment specified.", true);
-                break;
-            default:
-                return (print_error(rf, "Cannot parse header.", false), false);
-        }
-    }
+    if (write_header_result < 0)
+        if (!write_header_error_handling(rf, write_header_result))
+            return false;
     if (!parse_label_table(rf))
         return false;
     if (!process_instructions(rf))
