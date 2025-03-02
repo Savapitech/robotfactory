@@ -33,7 +33,7 @@ buff_t get_ins_name(char *line)
     buff_t buff = {NULL, 0};
     size_t len_instruction = 0;
 
-    len_instruction = u_strcspn(line, INSTRUCTION_CHAR);
+    len_instruction = u_strccspn(line, " \t");
     if (!len_instruction)
         return (buff_t){.str = NULL};
     if (u_strspn(line, INSTRUCTION_CHARS) != len_instruction)
@@ -48,9 +48,11 @@ void get_ref_count2(rf_t *rf, size_t i, int lbl_size)
 {
     char *line = rf->lines[i];
 
-    line += lbl_size;
+    line += lbl_size + 1;
     SKIP_SPACES(line);
-    if (get_ins_name(line + lbl_size + 1).sz)
+    if (!isalnum(*line))
+        return;
+    if (get_ins_name(line).sz)
         rf->ins_table_sz++;
 }
 
@@ -94,6 +96,25 @@ ins_t get_ins(rf_t *rf, char *line)
 }
 
 static
+bool parse_line2(rf_t *rf, int lbl_size, char *line, size_t *ins_i)
+{
+    if (!rf->ins_table_sz)
+        return true;
+    if (lbl_size)
+        line += lbl_size + 1;
+    SKIP_SPACES(line);
+    if (!isalnum(*line))
+        return true;
+    rf->ins_table[*ins_i] = get_ins(rf, line);
+    if (rf->ins_table[*ins_i].buff.str == NULL)
+        return false;
+    U_DEBUG("Ins found [%.*s] code [%d]\n", rf->ins_table[*ins_i].buff.sz,
+        rf->ins_table[*ins_i].buff.str, rf->ins_table[*ins_i].code);
+    *ins_i += 1;
+    return true;
+}
+
+static
 bool parse_line(rf_t *rf, size_t i, size_t *lbl_i, size_t *ins_i)
 {
     int lbl_size = 0;
@@ -108,20 +129,7 @@ bool parse_line(rf_t *rf, size_t i, size_t *lbl_i, size_t *ins_i)
         U_DEBUG("Label found [%.*s] [%lu]\n", lbl_size, line, *ins_i);
         *lbl_i += 1;
     }
-    if (!rf->ins_table_sz)
-        return true;
-    if (lbl_size)
-        line += lbl_size + 1;
-    SKIP_SPACES(line);
-    U_DEBUG("Line %s", line);
-    if (!isalnum(*line))
-        return true;
-    rf->ins_table[*ins_i] = get_ins(rf, line);
-    if (rf->ins_table[*ins_i].buff.str == NULL)
-        return false;
-    U_DEBUG("Ins found code [%d]\n", rf->ins_table[*ins_i].code);
-    *ins_i += 1;
-    return true;
+    return parse_line2(rf, lbl_size, line, ins_i);
 }
 
 bool parse_label_table(rf_t *rf)
