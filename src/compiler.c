@@ -62,10 +62,13 @@ static
 bool write_in_file(rf_t *rf)
 {
     int new_file_fd;
+    int prog_sz = __builtin_bswap32(rf->prog_sz);
 
+    u_memcpy(rf->final_buff.str + PROG_NAME_LENGTH + STRUCT_PADDING + 4,
+        &prog_sz, sizeof(int));
     u_strcpy(rf->file_name + u_strcspn(rf->file_name, '.') + 1, "cor\0");
     new_file_fd = open(rf->file_name, O_WRONLY | O_CREAT, 0644);
-    U_DEBUG("Writing in file [%s]\n", rf->file_name);
+    U_DEBUG("Writing [%d] bytes in file [%s]\n", rf->prog_sz, rf->file_name);
     if (new_file_fd == -1)
         return (WRITE_CONST(STDERR_FILENO, "Cannot write in file !\n"), false);
     write(new_file_fd, rf->final_buff.str, rf->final_buff.sz);
