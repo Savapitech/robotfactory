@@ -70,7 +70,7 @@ bool process_arg_dir_idx(rf_t *rf, arg_t *arg, char type, ins_t *ins)
         write_value(rf, arg);
     }
     if (type & T_LAB) {
-        arg->idx = -1;
+        arg->idx = 0;
         write_value(rf, arg);
     }
     return true;

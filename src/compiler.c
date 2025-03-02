@@ -75,8 +75,7 @@ __attribute__((nonnull))
 bool prepare_compilation(rf_t *rf)
 {
     if (!write_header(rf))
-        return (WRITE_CONST(STDERR_FILENO, CYAN "Cannot parse header.\n"
-            RESET), false);
+        return (print_error(rf, "Cannot parse header.", false), false);
     if (!parse_label_table(rf))
         return false;
     if (!process_instructions(rf))
