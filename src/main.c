@@ -108,7 +108,7 @@ int main(int ac, char **av)
     int file_name_len;
 
     if (ac < 2)
-        return (WRITE_CONST(STDERR_FILENO, "Too few arguments\n"),
+        return (WRITE_CONST(STDERR_FILENO, "Too few arguments.\n"),
             RETURN_SUCCESS);
     for (int i = 1; i < ac; i++) {
         slash_len = u_strcrspn(av[i], '/') + 1;

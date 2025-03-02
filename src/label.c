@@ -65,7 +65,7 @@ ins_t get_ins(rf_t *rf, char *line)
 
     buff = get_ins_name(line);
     if (buff.str == NULL) {
-        print_error(rf, "Invalind instruction", false);
+        print_error(rf, "Invalid instruction.", false);
         return ins;
     }
     for (size_t i = 0; i < OP_TAB_SZ; i++) {
@@ -77,7 +77,7 @@ ins_t get_ins(rf_t *rf, char *line)
         }
     }
     if (!ins.code)
-        print_error(rf, "Invalind instruction", false);
+        print_error(rf, "Invalid instruction.", false);
     return ins;
 }
 
