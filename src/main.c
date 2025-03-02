@@ -80,7 +80,7 @@ bool handle_file(char const *path, char *file_name)
 {
     rf_t rf = { .lines = NULL, .lines_sz = 0, .lines_i = 0,
         .lines_total_sz = 0, .lines_cap = DEFAULT_LINES_CAP,
-        .file_name = file_name };
+        .file_name = file_name, .prog_sz = 0 };
     struct stat st;
     size_t header_sz = PROG_NAME_LENGTH + STRUCT_PADDING + COMMENT_LENGTH;
 
@@ -111,7 +111,7 @@ int main(int ac, char **av)
         return (WRITE_CONST(STDERR_FILENO, "Too few arguments.\n"),
             RETURN_SUCCESS);
     for (int i = 1; i < ac; i++) {
-        slash_len = u_strcrspn(av[i], '/') + 1;
+        slash_len = u_strcrspn(av[i], '/') ? u_strcrspn(av[i], '/') + 1 : 0;
         file_name_len = u_strlen(av[i] + slash_len) + 4;
         file_name = malloc(sizeof(char) * file_name_len);
         if (file_name == NULL)
