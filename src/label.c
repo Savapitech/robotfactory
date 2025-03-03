@@ -124,7 +124,7 @@ bool parse_line(rf_t *rf, size_t *lbl_i, size_t *ins_i)
     if (rf->lbl_table_sz)
         lbl_size = get_lbl_sz(line);
     if (lbl_size) {
-        if (get_label_offset(rf, line, lbl_size) != -1)
+        if (*lbl_i && get_label_offset(rf, line, lbl_size) != -1)
             return (print_error(rf, "Multiple definition of the same label.",
                 false), false);
         rf->lbl_table[*lbl_i].name.str = line;
