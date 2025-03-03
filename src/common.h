@@ -66,4 +66,5 @@ typedef struct {
 
 void print_error(rf_t *rf, char const *msg, bool warning);
 void print_error_no_lines(rf_t *rf, char const *msg, bool warning);
+int get_label_offset(rf_t *rf, char *label_name, int label_sz);
 #endif /* COMMON_H */
