@@ -110,11 +110,14 @@ bool process_arg_dir_idx(rf_t *rf, arg_t *arg, char type, ins_t *ins)
 }
 
 static
-bool process_arg(rf_t *rf, buff_t *arg_buffp, ins_t *ins)
+bool process_arg(rf_t *rf, buff_t *arg_buffp, ins_t *ins, size_t arg_i)
 {
     arg_t arg = { .buff = arg_buffp, .size = sizeof(char) };
     char type = get_arg_type(arg.buff->str);
 
+    if (!(OP_TAB[ins->code - 1].type[arg_i] & type))
+        return (print_error(rf, "The argument given to the instruction is "
+            "invalid.", false), false);
     ins->cb = (ins->cb << 2) | CALC_CB(type);
     if (type & T_REG) {
         arg.buff->str++;
@@ -142,7 +145,7 @@ int get_args(rf_t *rf, op_t const *op, ins_t *ins, size_t ins_idx)
         if (arg_buff.sz < 1 || *arg_buff.str == '\0')
             continue;
         arg_count++;
-        if (!process_arg(rf, &arg_buff, ins))
+        if (!process_arg(rf, &arg_buff, ins, i))
             return -2;
         ins_arg_str = arg_buff.str + arg_buff.sz;
     }
