@@ -78,22 +78,21 @@ bool process_arg_dir_idx(rf_t *rf, arg_t *arg, char type, ins_t *ins)
 {
     arg->size = (!(type & T_DIR) || IS_IDX(ins->code))
         ? sizeof(short) : sizeof(int);
+    if (type & T_LAB)
+        return process_label(rf, arg, ins);
     if (type & T_DIR && !(type & T_LAB)) {
         arg->buff->str++;
         if (!u_strnum(arg->buff->str, &arg->dir))
             return false;
-        write_value(rf, arg, ins);
+        return write_value(rf, arg, ins);
     }
     if (type & T_IND) {
         if (!u_strnum(arg->buff->str, &arg->dir))
             return false;
         arg->idx = arg->dir;
         arg->size = 2;
-        write_value(rf, arg, ins);
+        return write_value(rf, arg, ins);
     }
-    if (type & T_LAB)
-        if (!process_label(rf, arg, ins))
-            return false;
     return true;
 }
 
@@ -112,7 +111,7 @@ bool process_arg(rf_t *rf, buff_t *arg_buffp, ins_t *ins, size_t arg_i)
         if (!u_strnum(arg.buff->str, &arg.dir) || !arg.dir || arg.dir >
             REG_NUMBER)
             return (print_error(rf, "Invalid register number.", false), false);
-        write_value(rf, &arg, ins);
+        return write_value(rf, &arg, ins);
     }
     if (type & T_DIR) {
         if (*(arg.buff->str + 1) != ':' && !isdigit(*(arg.buff->str + 1)))
