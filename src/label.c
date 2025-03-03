@@ -31,6 +31,20 @@ int get_label_offset(rf_t *rf, char *label_name, int label_sz)
     return -1;
 }
 
+bool check_existing_lbl(rf_t *rf, char *label_name, int label_sz, size_t lbl_i)
+{
+    if (!rf->lbl_table_sz)
+        return false;
+    for (size_t i = 0; i < lbl_i; i++) {
+        if (rf->lbl_table[i].name.sz != label_sz)
+            continue;
+        if (u_strncmp(rf->lbl_table[i].name.str, label_name,
+            rf->lbl_table[i].name.sz) == 0)
+            return true;
+    }
+    return false;
+}
+
 static
 size_t get_lbl_sz(char *line)
 {
@@ -143,7 +157,7 @@ bool parse_line(rf_t *rf, size_t *lbl_i, size_t *ins_i)
     if (rf->lbl_table_sz)
         lbl_size = get_lbl_sz(line);
     if (lbl_size) {
-        if (*lbl_i && get_label_offset(rf, line, lbl_size) != -1)
+        if (*lbl_i && check_existing_lbl(rf, line, lbl_size, *lbl_i))
             return (print_error(rf, "Multiple definition of the same label.",
                 false), false);
         rf->lbl_table[*lbl_i].name.str = line;
