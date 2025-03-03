@@ -29,25 +29,8 @@ char get_arg_type(char const *arg)
     return type;
 }
 
-int get_label_offset(rf_t *rf, char *label_name, int label_sz)
-{
-    if (!rf->lbl_table_sz)
-        return -1;
-    for (size_t i = 0; i < rf->lbl_table_sz; i++) {
-        U_DEBUG("Arg string [%.*s]\n", label_sz, label_name);
-        U_DEBUG("label string [%.*s]\n", rf->lbl_table[i].name.sz,
-            rf->lbl_table[i].name.str);
-        if (rf->lbl_table[i].name.sz != label_sz)
-            continue;
-        if (u_strncmp(rf->lbl_table[i].name.str, label_name,
-            rf->lbl_table[i].name.sz) == 0)
-            return 1;
-    }
-    return -1;
-}
-
 static
-bool write_value(rf_t *rf, arg_t *arg)
+bool write_value(rf_t *rf, arg_t *arg, ins_t *ins)
 {
     char *fbuff_ptr = rf->final_buff.str + rf->final_buff.sz;
 
@@ -66,22 +49,27 @@ bool write_value(rf_t *rf, arg_t *arg)
         rf->final_buff.sz += sizeof arg->dir;
     }
     rf->prog_sz += arg->size;
+    ins->size += arg->size;
     return true;
 }
 
 static
-bool process_label(rf_t *rf, arg_t *arg)
+bool process_label(rf_t *rf, arg_t *arg, ins_t *ins)
 {
     char *arg_buff = arg->buff->str;
     size_t del_nonalpha = u_strccspn(arg_buff, LABEL_CHARS);
     size_t arg_len = u_strccspn(arg_buff + del_nonalpha, ", \t");
+    int ins_pos;
 
     if (arg_buff > arg->buff->str + arg->buff->sz)
         return false;
-    if (get_label_offset(rf, arg_buff + del_nonalpha, arg_len) == -1)
+    ins_pos = get_label_offset(rf, arg_buff + del_nonalpha, arg_len);
+    if (ins_pos == -1)
         return (print_error(rf, "Undefined label.", false), false);
     arg->idx = 0;
-    write_value(rf, arg);
+    write_value(rf, arg, ins);
+    ins->lbl_ptr = rf->final_buff.str + rf->final_buff.sz - 2;
+    ins->lbl_ins_pos = ins_pos;
     return true;
 }
 
@@ -94,17 +82,17 @@ bool process_arg_dir_idx(rf_t *rf, arg_t *arg, char type, ins_t *ins)
         arg->buff->str++;
         if (!u_strnum(arg->buff->str, &arg->dir))
             return false;
-        write_value(rf, arg);
+        write_value(rf, arg, ins);
     }
     if (type & T_IND) {
         if (!u_strnum(arg->buff->str, &arg->dir))
             return false;
         arg->idx = arg->dir;
         arg->size = 2;
-        write_value(rf, arg);
+        write_value(rf, arg, ins);
     }
     if (type & T_LAB)
-        if (!process_label(rf, arg))
+        if (!process_label(rf, arg, ins))
             return false;
     return true;
 }
@@ -124,7 +112,7 @@ bool process_arg(rf_t *rf, buff_t *arg_buffp, ins_t *ins, size_t arg_i)
         if (!u_strnum(arg.buff->str, &arg.dir) || !arg.dir || arg.dir >
             REG_NUMBER)
             return (print_error(rf, "Invalid register number.", false), false);
-        write_value(rf, &arg);
+        write_value(rf, &arg, ins);
     }
     if (type & T_DIR) {
         if (*(arg.buff->str + 1) != ':' && !isdigit(*(arg.buff->str + 1)))
@@ -188,6 +176,7 @@ bool process_instructions(rf_t *rf)
             rf->final_buff.str[old_buff_sz + 1] = rf->ins_table[i].cb << (2 * (
                 MAX_ARGS_NUMBER - OP_TAB[rf->ins_table[i].code - 1].nbr_args));
             rf->prog_sz++;
+            rf->ins_table[i].size++;
         }
     }
     return true;
