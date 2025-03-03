@@ -126,6 +126,11 @@ bool process_arg(rf_t *rf, buff_t *arg_buffp, ins_t *ins, size_t arg_i)
             return (print_error(rf, "Invalid register number.", false), false);
         write_value(rf, &arg);
     }
+    if (type & T_DIR) {
+        if (*(arg.buff->str + 1) != ':' && !isdigit(*(arg.buff->str + 1)))
+            return (print_error(rf, "The argument given to the instruction is "
+                "invalid.", false), false);
+    }
     return process_arg_dir_idx(rf, &arg, type, ins);
 }
 
