@@ -51,17 +51,11 @@ bool fill_line(rf_t *rf, char *buffer)
 }
 
 static
-bool read_file(char const *path, rf_t *rf)
+bool read_lines(FILE *file, rf_t *rf)
 {
-    FILE *file = fopen(path, "r");
     char *buffer = NULL;
     size_t buffer_sz;
 
-    if (file == NULL)
-        return NULL;
-    rf->lines = (char **)malloc(sizeof *rf->lines * rf->lines_cap);
-    if (rf->lines == NULL)
-        return (fclose(file), false);
     for (; getline(&buffer, &buffer_sz, file) != -1;) {
         rf->lines_total_sz++;
         if (u_strlen(buffer) < 2)
@@ -71,7 +65,25 @@ bool read_file(char const *path, rf_t *rf)
             return (fclose(file), false);
         }
     }
+    if (rf->lines_sz < 1)
+        return (print_error_no_lines(rf, "The file is empty.", false), false);
     free(buffer);
+    return true;
+}
+
+static
+bool read_file(char const *path, rf_t *rf)
+{
+    FILE *file = fopen(path, "r");
+
+    if (file == NULL)
+        return (WRITE_CONST(STDERR_FILENO, "Error in function open: No such "
+            "file or directory.\n"), false);
+    rf->lines = (char **)malloc(sizeof *rf->lines * rf->lines_cap);
+    if (rf->lines == NULL)
+        return (fclose(file), false);
+    if (!read_lines(file, rf))
+        return false;
     return (fclose(file), true);
 }
 
@@ -85,7 +97,7 @@ bool handle_file(char const *path, char *file_name)
     size_t header_sz = PROG_NAME_LENGTH + STRUCT_PADDING + COMMENT_LENGTH;
 
     if (!read_file(path, &rf))
-        return (WRITE_CONST(STDERR_FILENO, "Error: file not exist\n"), false);
+        return false;
     stat(path, &st);
     rf.final_buff.str = malloc(sizeof(char) * (st.st_size + header_sz + 4));
     if (rf.final_buff.str == NULL)

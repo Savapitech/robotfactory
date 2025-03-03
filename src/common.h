@@ -33,6 +33,7 @@ typedef struct {
     char code;
     uint8_t cb;
     bool has_cb;
+    size_t line_i;
 } ins_t;
 
 typedef struct {
@@ -64,4 +65,5 @@ typedef struct {
 } rf_t;
 
 void print_error(rf_t *rf, char const *msg, bool warning);
+void print_error_no_lines(rf_t *rf, char const *msg, bool warning);
 #endif /* COMMON_H */

@@ -108,17 +108,18 @@ bool parse_line2(rf_t *rf, int lbl_size, char *line, size_t *ins_i)
     rf->ins_table[*ins_i] = get_ins(rf, line);
     if (rf->ins_table[*ins_i].buff.str == NULL)
         return false;
-    U_DEBUG("Ins found [%.*s] code [%d]\n", rf->ins_table[*ins_i].buff.sz,
-        rf->ins_table[*ins_i].buff.str, rf->ins_table[*ins_i].code);
+    U_DEBUG("Ins found [%.*s] code [%d] line i [%lu]\n",
+        rf->ins_table[*ins_i].buff.sz, rf->ins_table[*ins_i].buff.str,
+        rf->ins_table[*ins_i].code, rf->lines_i);
     *ins_i += 1;
     return true;
 }
 
 static
-bool parse_line(rf_t *rf, size_t i, size_t *lbl_i, size_t *ins_i)
+bool parse_line(rf_t *rf, size_t *lbl_i, size_t *ins_i)
 {
     int lbl_size = 0;
-    char *line = rf->lines[i];
+    char *line = rf->lines[rf->lines_i];
 
     if (rf->lbl_table_sz)
         lbl_size = get_lbl_sz(line);
@@ -126,7 +127,8 @@ bool parse_line(rf_t *rf, size_t i, size_t *lbl_i, size_t *ins_i)
         rf->lbl_table[*lbl_i].name.str = line;
         rf->lbl_table[*lbl_i].name.sz = lbl_size;
         rf->lbl_table[*lbl_i].ins_pos = *ins_i;
-        U_DEBUG("Label found [%.*s] [%lu]\n", lbl_size, line, *ins_i);
+        U_DEBUG("Label found [%.*s] [%lu] line i [%lu]\n", lbl_size, line,
+            *ins_i, rf->lines_i);
         *lbl_i += 1;
     }
     return parse_line2(rf, lbl_size, line, ins_i);
@@ -148,8 +150,8 @@ bool parse_label_table(rf_t *rf)
         if (rf->ins_table == NULL)
             return false;
     }
-    for (size_t i = rf->lines_i; i < rf->lines_sz; i++)
-        if (!parse_line(rf, i, &lbl_i, &ins_i))
+    for (; rf->lines_i < rf->lines_sz; rf->lines_i++)
+        if (!parse_line(rf, &lbl_i, &ins_i))
             return false;
     U_DEBUG("Found [%lu] label%s, [%lu] ins.\n", rf->lbl_table_sz,
         rf->lbl_table_sz > 1 ? "s" : "", rf->ins_table_sz);

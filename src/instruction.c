@@ -30,6 +30,24 @@ char get_arg_type(char const *arg)
 }
 
 static
+int get_label_offset(rf_t *rf, char *label_name, int label_sz)
+{
+    for (size_t i = 0; i < rf->lbl_table_sz; i++) {
+        U_DEBUG("Arg string [%.*s]\n", label_sz, label_name);
+        U_DEBUG("label string [%.*s]\n", rf->lbl_table[i].name.sz,
+            rf->lbl_table[i].name.str);
+        U_DEBUG("Arg sz [%d], lbl sz [%d]\n",
+            label_sz, rf->lbl_table[i].name.sz);
+        if (rf->lbl_table[i].name.sz != label_sz)
+            continue;
+        if (u_strncmp(rf->lbl_table[i].name.str, label_name,
+            rf->lbl_table[i].name.sz) == 0)
+            return 1;
+    }
+    return -1;
+}
+
+static
 bool write_value(rf_t *rf, arg_t *arg)
 {
     char *fbuff_ptr = rf->final_buff.str + rf->final_buff.sz;
@@ -53,6 +71,22 @@ bool write_value(rf_t *rf, arg_t *arg)
 }
 
 static
+bool process_label(rf_t *rf, arg_t *arg)
+{
+    char *arg_buff = arg->buff->str;
+    size_t del_nonalpha = u_strccspn(arg_buff, LABEL_CHARS);
+    size_t arg_len = u_strccspn(arg_buff + del_nonalpha, ", \t");
+
+    if (arg_buff > arg->buff->str + arg->buff->sz)
+        return false;
+    if (get_label_offset(rf, arg_buff + del_nonalpha, arg_len) == -1)
+        return (print_error(rf, "Undefined label.", false), false);
+    arg->idx = 0;
+    write_value(rf, arg);
+    return true;
+}
+
+static
 bool process_arg_dir_idx(rf_t *rf, arg_t *arg, char type, ins_t *ins)
 {
     arg->size = (!(type & T_DIR) || IS_IDX(ins->code))
@@ -70,10 +104,9 @@ bool process_arg_dir_idx(rf_t *rf, arg_t *arg, char type, ins_t *ins)
         arg->size = 2;
         write_value(rf, arg);
     }
-    if (type & T_LAB) {
-        arg->idx = 0;
-        write_value(rf, arg);
-    }
+    if (type & T_LAB)
+        if (!process_label(rf, arg))
+            return false;
     return true;
 }
 
