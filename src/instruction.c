@@ -48,6 +48,7 @@ bool write_value(rf_t *rf, arg_t *arg)
         u_memcpy(fbuff_ptr, &arg->dir, sizeof arg->dir);
         rf->final_buff.sz += sizeof arg->dir;
     }
+    rf->prog_sz += arg->size;
     return true;
 }
 
@@ -70,7 +71,7 @@ bool process_arg_dir_idx(rf_t *rf, arg_t *arg, char type, ins_t *ins)
         write_value(rf, arg);
     }
     if (type & T_LAB) {
-        arg->idx = -1;
+        arg->idx = 0;
         write_value(rf, arg);
     }
     return true;
@@ -136,15 +137,18 @@ bool process_instructions(rf_t *rf)
     for (size_t i = 0; i < rf->ins_table_sz; i++) {
         old_buff_sz = rf->final_buff.sz;
         rf->final_buff.str[rf->final_buff.sz] = rf->ins_table[i].code;
+        rf->prog_sz++;
         rf->final_buff.sz++;
         if (rf->ins_table[i].has_cb)
             rf->final_buff.sz++;
         if (!get_args_result_handling(rf, get_args(rf,
             &OP_TAB[rf->ins_table[i].code - 1], &rf->ins_table[i], i)))
             return false;
-        if (rf->ins_table[i].has_cb)
+        if (rf->ins_table[i].has_cb) {
             rf->final_buff.str[old_buff_sz + 1] = rf->ins_table[i].cb << (2 * (
                 MAX_ARGS_NUMBER - OP_TAB[rf->ins_table[i].code - 1].nbr_args));
+            rf->prog_sz++;
+        }
     }
     return true;
 }

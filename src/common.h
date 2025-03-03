@@ -58,6 +58,7 @@ typedef struct {
     size_t lbl_table_sz;
     ins_t *ins_table;
     size_t ins_table_sz;
+    int prog_sz;
     // Other
     char *file_name;
 } rf_t;
