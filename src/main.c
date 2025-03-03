@@ -35,10 +35,21 @@ bool ensure_lines_buff_cap(rf_t *rf)
 }
 
 static
+void cleanup_line(char *buffer)
+{
+    for (; *buffer != '\0'; buffer++)
+        if (*buffer == COMMENT_CHAR)
+            *buffer = '\0';
+}
+
+static
 bool fill_line(rf_t *rf, char *buffer)
 {
     ensure_lines_buff_cap(rf);
     SKIP_SPACES(buffer);
+    cleanup_line(buffer);
+    if (u_strlen(buffer) < 2)
+        return true;
     rf->lines[rf->lines_sz] = malloc(sizeof(char) * (u_strlen(buffer) + 2));
     if (rf->lines[rf->lines_sz] == NULL)
         return false;

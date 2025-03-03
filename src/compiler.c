@@ -24,11 +24,19 @@ int write_header2(size_t header_sz, char *header_str, buff_t *name,
     buff_t *comment)
 {
     int result = 0;
+    char *after_name = name->str + name->sz + 1;
+    char *after_comment = comment->str + comment->sz + 1;
 
+    SKIP_SPACES(after_name);
+    if (isprint(*after_name))
+        return -5;
     u_strncpy(header_str, name->str, name->sz);
     if (!comment->str)
         result = -2;
     else {
+        SKIP_SPACES(after_comment);
+        if (isprint(*after_comment))
+            return -5;
         header_str += header_sz - COMMENT_LENGTH;
         u_strncpy(header_str, comment->str, comment->sz);
     }

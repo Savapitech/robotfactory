@@ -29,15 +29,14 @@ char get_arg_type(char const *arg)
     return type;
 }
 
-static
 int get_label_offset(rf_t *rf, char *label_name, int label_sz)
 {
+    if (!rf->lbl_table_sz)
+        return -1;
     for (size_t i = 0; i < rf->lbl_table_sz; i++) {
         U_DEBUG("Arg string [%.*s]\n", label_sz, label_name);
         U_DEBUG("label string [%.*s]\n", rf->lbl_table[i].name.sz,
             rf->lbl_table[i].name.str);
-        U_DEBUG("Arg sz [%d], lbl sz [%d]\n",
-            label_sz, rf->lbl_table[i].name.sz);
         if (rf->lbl_table[i].name.sz != label_sz)
             continue;
         if (u_strncmp(rf->lbl_table[i].name.str, label_name,
@@ -111,11 +110,14 @@ bool process_arg_dir_idx(rf_t *rf, arg_t *arg, char type, ins_t *ins)
 }
 
 static
-bool process_arg(rf_t *rf, buff_t *arg_buffp, ins_t *ins)
+bool process_arg(rf_t *rf, buff_t *arg_buffp, ins_t *ins, size_t arg_i)
 {
     arg_t arg = { .buff = arg_buffp, .size = sizeof(char) };
     char type = get_arg_type(arg.buff->str);
 
+    if (!(OP_TAB[ins->code - 1].type[arg_i] & type))
+        return (print_error(rf, "The argument given to the instruction is "
+            "invalid.", false), false);
     ins->cb = (ins->cb << 2) | CALC_CB(type);
     if (type & T_REG) {
         arg.buff->str++;
@@ -123,6 +125,11 @@ bool process_arg(rf_t *rf, buff_t *arg_buffp, ins_t *ins)
             REG_NUMBER)
             return (print_error(rf, "Invalid register number.", false), false);
         write_value(rf, &arg);
+    }
+    if (type & T_DIR) {
+        if (*(arg.buff->str + 1) != ':' && !isdigit(*(arg.buff->str + 1)))
+            return (print_error(rf, "The argument given to the instruction is "
+                "invalid.", false), false);
     }
     return process_arg_dir_idx(rf, &arg, type, ins);
 }
@@ -143,7 +150,7 @@ int get_args(rf_t *rf, op_t const *op, ins_t *ins, size_t ins_idx)
         if (arg_buff.sz < 1 || *arg_buff.str == '\0')
             continue;
         arg_count++;
-        if (!process_arg(rf, &arg_buff, ins))
+        if (!process_arg(rf, &arg_buff, ins, i))
             return -2;
         ins_arg_str = arg_buff.str + arg_buff.sz;
     }
