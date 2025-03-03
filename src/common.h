@@ -33,6 +33,7 @@ typedef struct {
     char code;
     uint8_t cb;
     bool has_cb;
+    size_t line_i;
 } ins_t;
 
 typedef struct {
