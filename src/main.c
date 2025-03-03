@@ -101,8 +101,7 @@ bool read_file(char const *path, rf_t *rf)
 static
 bool handle_file(char const *path, char *file_name)
 {
-    rf_t rf = { .lines = NULL, .lines_sz = 0, .lines_i = 0,
-        .lines_total_sz = 0, .lines_cap = DEFAULT_LINES_CAP,
+    rf_t rf = { .lines = NULL, 0, .lines_cap = DEFAULT_LINES_CAP,
         .file_name = file_name, .prog_sz = 0 };
     struct stat st;
     size_t header_sz = PROG_NAME_LENGTH + STRUCT_PADDING + COMMENT_LENGTH;
@@ -114,7 +113,8 @@ bool handle_file(char const *path, char *file_name)
     if (rf.final_buff.str == NULL)
         return (free((void *)rf.lines), false);
     u_bzero(rf.final_buff.str, st.st_size + header_sz + 4);
-    prepare_compilation(&rf);
+    if (!prepare_compilation(&rf))
+        return false;
     for (size_t i = 0; i < rf.lines_sz; i++)
         free(rf.lines[i]);
     free((void *)rf.lines);

@@ -54,10 +54,10 @@ typedef struct {
     // Buffer
     char **lines;
     size_t lines_sz;
-    size_t lines_cap;
     size_t lines_i;
-    buff_t final_buff;
     size_t lines_total_sz;
+    buff_t final_buff;
+    size_t lines_cap;
     // Compiler
     label_t *lbl_table;
     size_t lbl_table_sz;
