@@ -134,6 +134,27 @@ bool write_header_error_handling(rf_t *rf, int write_header_result)
     return false;
 }
 
+static
+void write_lbl_in_fbuff(rf_t *rf)
+{
+    short bytes_offset = 0;
+
+    for (size_t i = 0; i < rf->ins_table_sz; i++) {
+        if (!rf->ins_table[i].lbl_ptr)
+            continue;
+        bytes_offset = 0;
+        for (int j = rf->ins_table[i].ins_i; j <
+            rf->ins_table[i].lbl_ins_pos; j++)
+            bytes_offset += rf->ins_table[j].size;
+        for (size_t j = rf->ins_table[i].lbl_ins_pos; j <
+            rf->ins_table[i].ins_i; j++)
+            bytes_offset -= rf->ins_table[j].size;
+        U_DEBUG("Lbl offset [%d] bytes, ins i [%lu]\n", bytes_offset, i);
+        bytes_offset = __builtin_bswap16(bytes_offset);
+        u_memcpy(rf->ins_table[i].lbl_ptr, &bytes_offset, sizeof(short));
+    }
+}
+
 __attribute__((nonnull))
 bool prepare_compilation(rf_t *rf)
 {
@@ -146,5 +167,6 @@ bool prepare_compilation(rf_t *rf)
         return false;
     if (!process_instructions(rf))
         return false;
+    write_lbl_in_fbuff(rf);
     return write_in_file(rf);
 }

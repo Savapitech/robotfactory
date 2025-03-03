@@ -25,7 +25,7 @@ enum {
 
 typedef struct {
     buff_t name;
-    int ins_pos;
+    size_t ins_pos;
 } label_t;
 
 typedef struct {
@@ -34,6 +34,10 @@ typedef struct {
     uint8_t cb;
     bool has_cb;
     size_t line_i;
+    size_t size;
+    size_t ins_i;
+    char *lbl_ptr;
+    int lbl_ins_pos;
 } ins_t;
 
 typedef struct {
