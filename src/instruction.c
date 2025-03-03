@@ -29,15 +29,14 @@ char get_arg_type(char const *arg)
     return type;
 }
 
-static
 int get_label_offset(rf_t *rf, char *label_name, int label_sz)
 {
+    if (!rf->lbl_table_sz)
+        return -1;
     for (size_t i = 0; i < rf->lbl_table_sz; i++) {
         U_DEBUG("Arg string [%.*s]\n", label_sz, label_name);
         U_DEBUG("label string [%.*s]\n", rf->lbl_table[i].name.sz,
             rf->lbl_table[i].name.str);
-        U_DEBUG("Arg sz [%d], lbl sz [%d]\n",
-            label_sz, rf->lbl_table[i].name.sz);
         if (rf->lbl_table[i].name.sz != label_sz)
             continue;
         if (u_strncmp(rf->lbl_table[i].name.str, label_name,
