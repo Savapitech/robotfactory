@@ -77,6 +77,19 @@ bool write_in_file(rf_t *rf)
     return (close(new_file_fd), true);
 }
 
+void print_error_no_lines(rf_t *rf, char const *msg, bool warning)
+{
+    if (rf->file_name == NULL)
+        return;
+    WRITE_CONST(STDERR_FILENO, "asm, ");
+    write(STDERR_FILENO, rf->file_name, u_strlen(rf->file_name));
+    WRITE_CONST(STDERR_FILENO, ": " CYAN);
+    if (warning)
+        WRITE_CONST(STDERR_FILENO, RED "Warning: " CYAN);
+    write(STDERR_FILENO, msg, u_strlen(msg));
+    WRITE_CONST(STDERR_FILENO, "\n" RESET);
+}
+
 void print_error(rf_t *rf, char const *msg, bool warning)
 {
     if (rf->file_name == NULL)
