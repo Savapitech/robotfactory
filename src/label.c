@@ -19,9 +19,6 @@ int get_label_offset(rf_t *rf, char *label_name, int label_sz)
     if (!rf->lbl_table_sz)
         return -1;
     for (size_t i = 0; i < rf->lbl_table_sz; i++) {
-        U_DEBUG("Arg string [%.*s]\n", label_sz, label_name);
-        U_DEBUG("label string [%.*s]\n", rf->lbl_table[i].name.sz,
-            rf->lbl_table[i].name.str);
         if (rf->lbl_table[i].name.sz != label_sz)
             continue;
         if (u_strncmp(rf->lbl_table[i].name.str, label_name,
@@ -141,9 +138,9 @@ bool parse_line2(rf_t *rf, int lbl_size, char *line, size_t *ins_i)
     rf->ins_table[*ins_i].ins_i = *ins_i;
     if (rf->ins_table[*ins_i].buff.str == NULL)
         return false;
-    U_DEBUG("Ins found [%.*s] code [%d] line i [%lu]\n",
+    U_DEBUG("Ins found [%.*s] code [%d] line i [%lu] ins i [%lu]\n",
         rf->ins_table[*ins_i].buff.sz, rf->ins_table[*ins_i].buff.str,
-        rf->ins_table[*ins_i].code, rf->lines_i);
+        rf->ins_table[*ins_i].code, rf->lines_i, *ins_i);
     *ins_i += 1;
     return true;
 }

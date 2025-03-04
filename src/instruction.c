@@ -34,8 +34,8 @@ bool write_value(rf_t *rf, arg_t *arg, ins_t *ins)
 {
     char *fbuff_ptr = rf->final_buff.str + rf->final_buff.sz;
 
-    U_DEBUG("Writing [%lu] byte%s value [%d]\n", arg->size,
-        (arg->size > 1 ? "s" : ""), arg->dir);
+    U_DEBUG("Writing ins i [%lu] [%lu] byte%s value [%d]\n", ins->ins_i,
+        arg->size, (arg->size > 1 ? "s" : ""), arg->dir);
     if (arg->size == sizeof(char)) {
         u_memcpy(fbuff_ptr, &arg->reg, sizeof(arg->reg));
         rf->final_buff.sz++;
@@ -114,9 +114,9 @@ bool process_arg(rf_t *rf, buff_t *arg_buffp, ins_t *ins, size_t arg_i)
         return write_value(rf, &arg, ins);
     }
     if (type & T_DIR) {
-        if (*(arg.buff->str + 1) != ':' && !isdigit(*(arg.buff->str + 1)))
-            return (print_error(rf, "The argument given to the instruction is "
-                "invalid.", false), false);
+        if (*(arg.buff->str + 1) != ':' && *(arg.buff->str + 1) != '-'
+            && !isdigit(*(arg.buff->str + 1)))
+            return (print_error(rf, "Invalid ins argument.", false), false);
     }
     return process_arg_dir_idx(rf, &arg, type, ins);
 }
