@@ -54,11 +54,11 @@ int write_header(rf_t *rf)
 
     *(uint32_t *)(header_str) = swap_uint32(COREWAR_EXEC_MAGIC);
     header_str += sizeof(int);
-    name = get_metadata(rf->lines[rf->lines_i], NAME_CMD_STRING);
+    name = get_metadata(rf->lines[rf->lines_i], NAME_CMD_STRING, rf);
     if (name.str == NULL)
         return -1;
     rf->lines_i++;
-    comment = get_metadata(rf->lines[rf->lines_i], COMMENT_CMD_STRING);
+    comment = get_metadata(rf->lines[rf->lines_i], COMMENT_CMD_STRING, rf);
     if (comment.sz > COMMENT_LENGTH || (comment.sz < 1 && comment.str))
         return comment.sz > COMMENT_LENGTH ? -3 : -4;
     if (comment.str)
