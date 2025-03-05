@@ -66,6 +66,8 @@ typedef struct {
     int prog_sz;
     // Other
     char *file_name;
+    int name_count;
+    int comment_count;
 } rf_t;
 
 void print_error(rf_t *rf, char const *msg, bool warning);

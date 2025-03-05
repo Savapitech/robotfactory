@@ -50,6 +50,11 @@ bool fill_line(rf_t *rf, char *buffer)
     cleanup_line(buffer);
     if (u_strlen(buffer) < 2)
         return true;
+    if (u_strncmp(buffer, NAME_CMD_STRING, u_strlen(NAME_CMD_STRING)) == 0)
+        rf->name_count++;
+    if (u_strncmp(buffer, COMMENT_CMD_STRING,
+        u_strlen(COMMENT_CMD_STRING)) == 0)
+        rf->comment_count++;
     rf->lines[rf->lines_sz] = malloc(sizeof(char) * (u_strlen(buffer) + 2));
     if (rf->lines[rf->lines_sz] == NULL)
         return false;
@@ -102,7 +107,7 @@ static
 bool handle_file(char const *path, char *file_name)
 {
     rf_t rf = { .lines = NULL, 0, .lines_cap = DEFAULT_LINES_CAP,
-        .file_name = file_name, .prog_sz = 0 };
+        .file_name = file_name, .prog_sz = 0, .name_count = 0, 0 };
     struct stat st;
     size_t header_sz = PROG_NAME_LENGTH + STRUCT_PADDING + COMMENT_LENGTH;
 

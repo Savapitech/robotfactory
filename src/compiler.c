@@ -158,8 +158,13 @@ void write_lbl_in_fbuff(rf_t *rf)
 __attribute__((nonnull))
 bool prepare_compilation(rf_t *rf)
 {
-    int write_header_result = write_header(rf);
+    int write_header_result;
 
+    if (rf->name_count > 1)
+        return (print_error_no_lines(rf, "Double name def", false), false);
+    if (rf->comment_count > 1)
+        return (print_error_no_lines(rf, "Double comment def", false), false);
+    write_header_result = write_header(rf);
     if (write_header_result < 0)
         if (!write_header_error_handling(rf, write_header_result))
             return false;
