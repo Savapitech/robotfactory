@@ -27,7 +27,8 @@ int write_header2(size_t header_sz, char *header_str, buff_t *name,
     char *after_name = name->str + name->sz + 1;
     char *after_comment = comment->str + comment->sz + 1;
 
-    if (*after_name != '\0' && *after_name != '\n') {
+    if (*after_name != '\0' && *after_name != '\n' && *after_name != ' ' &&
+        *after_name != '\t') {
         return -5;
     }
     u_strncpy(header_str, name->str, name->sz);
