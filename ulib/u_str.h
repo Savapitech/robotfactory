@@ -7,6 +7,7 @@
 
 #ifndef STRING_H
     #define STRING_H
+    #include <stdbool.h>
     #include <stddef.h>
 
 typedef struct {
@@ -31,7 +32,7 @@ int u_strcspn(char const *str, char c);
 size_t u_strspn(const char *s, const char *accept);
 char *u_strchr(const char *s, char c);
 size_t u_strccspn(const char *s, const char *reject);
-int u_strnum(char *strp, int *n);
+bool u_strnum(char *strp, int *n, size_t sz);
 int u_strcrspn(char const *str, char c);
 int u_putnbr(int n);
 

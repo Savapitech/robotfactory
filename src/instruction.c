@@ -82,12 +82,12 @@ bool process_arg_dir_idx(rf_t *rf, arg_t *arg, char type, ins_t *ins)
         return process_label(rf, arg, ins);
     if (type & T_DIR && !(type & T_LAB)) {
         arg->buff->str++;
-        if (!u_strnum(arg->buff->str, &arg->dir))
+        if (!u_strnum(arg->buff->str, &arg->dir, arg->buff->sz))
             return false;
         return write_value(rf, arg, ins);
     }
     if (type & T_IND) {
-        if (!u_strnum(arg->buff->str, &arg->dir))
+        if (!u_strnum(arg->buff->str, &arg->dir, arg->buff->sz))
             return false;
         arg->idx = arg->dir;
         arg->size = 2;
@@ -103,12 +103,12 @@ bool process_arg(rf_t *rf, buff_t *arg_buffp, ins_t *ins, size_t arg_i)
     char type = get_arg_type(arg.buff->str);
 
     if (!(OP_TAB[ins->code - 1].type[arg_i] & type))
-        return (print_error(rf, "The argument given to the instruction is "
-            "invalid.", false), false);
+        return (print_error(rf, "Invalid instruction.", false), false);
     ins->cb = (ins->cb << 2) | CALC_CB(type);
     if (type & T_REG) {
         arg.buff->str++;
-        if (!u_strnum(arg.buff->str, &arg.dir) || !arg.dir || arg.dir >
+        if (!u_strnum(arg.buff->str, &arg.dir, arg.buff->sz)
+            || !arg.dir || arg.dir >
             REG_NUMBER)
             return (print_error(rf, "Invalid register number.", false), false);
         return write_value(rf, &arg, ins);
