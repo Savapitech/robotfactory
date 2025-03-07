@@ -42,6 +42,4 @@ unit_tests
 debug
 
 *.cor2
-fixtures
-validator*
 asm_ref
