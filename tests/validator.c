@@ -8,39 +8,39 @@
 #include "validator.h"
 
 static const char *FILES[] = {
-    "fixtures/arg_length.s",
-    "fixtures/abel.s",
-    "fixtures/bill.s",
-    "fixtures/errors/chars_after_name.s",
-    "fixtures/errors/chars_after_comment.s",
-    "fixtures/errors/comment_too_long.s",
-    "fixtures/errors/invalid_op.s",
-    "fixtures/errors/missing_quote.s",
-    "fixtures/errors/missing_comment.s",
-    "fixtures/errors/missing_label.s",
-    "fixtures/errors/missing_name.s",
-    "fixtures/errors/missing_newline.s",
-    "fixtures/errors/missing_newline2.s",
-    "fixtures/errors/missing_string.s",
-    "fixtures/errors/empty_name.s",
-    "fixtures/errors/name_too_long.s",
-    "fixtures/errors/newline_in_comment.s",
-    "fixtures/errors/register_too_big.s",
-    "fixtures/errors/register_too_small.s",
-    "fixtures/errors/relative_empty.s",
-    "fixtures/errors/double_label_def.s",
-    "fixtures/errors/invalid_args.s",
-    "fixtures/errors/no_val_dir.s",
-    "fixtures/errors/no_label_char_dir.s",
-    "fixtures/pdd.s",
-    "fixtures/tyron.s",
-    "fixtures/jon.s",
-    "fixtures/jon_ind.s",
-    "fixtures/42.s",
-    "fixtures/octobre.s",
+    "tests/fixtures/arg_length.s",
+    "tests/fixtures/abel.s",
+    "tests/fixtures/bill.s",
+    "tests/fixtures/errors/chars_after_name.s",
+    "tests/fixtures/errors/chars_after_comment.s",
+    "tests/fixtures/errors/comment_too_long.s",
+    "tests/fixtures/errors/invalid_op.s",
+    "tests/fixtures/errors/missing_quote.s",
+    "tests/fixtures/errors/missing_comment.s",
+    "tests/fixtures/errors/missing_label.s",
+    "tests/fixtures/errors/missing_name.s",
+    "tests/fixtures/errors/missing_newline.s",
+    "tests/fixtures/errors/missing_newline2.s",
+    "tests/fixtures/errors/missing_string.s",
+    "tests/fixtures/errors/empty_name.s",
+    "tests/fixtures/errors/name_too_long.s",
+    "tests/fixtures/errors/newline_in_comment.s",
+    "tests/fixtures/errors/register_too_big.s",
+    "tests/fixtures/errors/register_too_small.s",
+    "tests/fixtures/errors/relative_empty.s",
+    "tests/fixtures/errors/double_label_def.s",
+    "tests/fixtures/errors/invalid_args.s",
+    "tests/fixtures/errors/no_val_dir.s",
+    "tests/fixtures/errors/no_label_char_dir.s",
+    "tests/fixtures/pdd.s",
+    "tests/fixtures/tyron.s",
+    "tests/fixtures/jon.s",
+    "tests/fixtures/jon_ind.s",
+    "tests/fixtures/42.s",
+    "tests/fixtures/octobre.s",
 };
 
-int ql_file_read_n(char const *filepath, char *buff, size_t size)
+int file_read_n(char const *filepath, char *buff, size_t size)
 {
     int fd = open(filepath, O_RDONLY);
     int rd;
@@ -52,14 +52,14 @@ int ql_file_read_n(char const *filepath, char *buff, size_t size)
     return rd;
 }
 
-off_t ql_file_size(char const *filepath)
+off_t file_size(char const *filepath)
 {
     struct stat fi;
 
     return (stat(filepath, &fi) < 0) ? -1 : fi.st_size;
 }
 
-char *ql_file_read(char const *filepath)
+char *file_read(char const *filepath)
 {
     struct stat fi;
     char *content;
@@ -70,7 +70,7 @@ char *ql_file_read(char const *filepath)
     if (content == NULL)
         return NULL;
     content[fi.st_size] = '\0';
-    if (ql_file_read_n(filepath, content, fi.st_size) == fi.st_size)
+    if (file_read_n(filepath, content, fi.st_size) == fi.st_size)
         return content;
     free(content);
     return NULL;
@@ -147,14 +147,14 @@ int main(void)
     char *p;
 
     for (size_t i = 0; i < CLENGTH_OF(FILES); i++) {
-        run_command("./asm_ref %s", FILES[i]);
+        run_command("tests/asm_ref %s", FILES[i]);
         p = strrchr(FILES[i], '/') + 1;
         len = strlen(p);
         memcpy(file, p, len);
         memcpy(strrchr(file, '.'), SSTR_UNPACK(".cor"));
         len += 2;
         run_command("mv %s %s2", file, file);
-        run_command("./asm %s", FILES[i]);
+        run_command("./test %s", FILES[i]);
         memcpy(file2, file, len);
         file2[len] = '2';
         file2[len + 1] = '\0';

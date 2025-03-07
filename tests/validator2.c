@@ -70,12 +70,12 @@ int check_value_f(char **f, long filediff)
 size_t diff(char *left, char *right)
 {
     size_t diff = 0;
-    long f1_size = ql_file_size(left);
-    long f2_size = ql_file_size(right);
+    long f1_size = file_size(left);
+    long f2_size = file_size(right);
     long shortest = MIN(f1_size, f2_size);
     long longest = MAX(f1_size, f2_size);
     long filediff = f1_size - f2_size;
-    char *f[2] = { ql_file_read(left), ql_file_read(right) };
+    char *f[2] = { file_read(left), file_read(right) };
 
     printf("computing diff: [%s] <=> [%s]\n", left, right);
     if (check_value_f(f, filediff) != -1)

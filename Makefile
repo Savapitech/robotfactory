@@ -12,6 +12,7 @@ BIN_NAME := asm
 LIB_NAME := libu.a
 
 SRC := $(wildcard src/*.c)
+TEST_SRC := $(wildcard tests/*.c)
 
 LIB_SRC := $(wildcard ulib/*.c)
 LIB_SRC += $(wildcard ulib/write/printf/*.c)
@@ -69,15 +70,27 @@ endef
 
 $(eval $(call mk-profile, release, SRC, , $(BIN_NAME)))
 $(eval $(call mk-profile, debug, SRC, -D U_DEBUG_MODE -g3, debug))
+$(eval $(call mk-profile, test, SRC, --coverage, test))
 
 all: $(NAME_release)
+
+tests_run: $(NAME_test)
+	@ $(CC) -Wno-unused-result tests/*.c -I tests/ -o validator
+	@ $(LOG_TIME) "$(C_GREEN) CC $(C_PURPLE) validator $(C_RESET)"
+	./validator
+
+cov: tests_run
+	gcovr . \
+		--gcov-ignore-errors=no_working_dir_found \
+		--exclude-unreachable-branches \
+		--exclude tests
 
 clean:
 	@ $(RM) $(OBJ)
 	@ $(LOG_TIME) "$(C_YELLOW) RM $(C_PURPLE) $(OBJ) $(C_RESET)"
 
 fclean:
-	@ $(RM) -r $(NAME_release) $(NAME_debug) $(BUILD_DIR)
+	@ $(RM) -r test validator $(NAME_release) $(NAME_debug) $(BUILD_DIR)
 	@ $(LOG_TIME) "$(C_YELLOW) RM $(C_PURPLE) $(NAME_release) $(NAME_debug) \
 		$(C_RESET)"
 
